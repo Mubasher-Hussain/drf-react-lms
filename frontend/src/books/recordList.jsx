@@ -75,7 +75,7 @@ export function RecordsList(props) {
   }, [reader])
   
   return (
-    <div class='recordList'>
+    <div class='bookList'>
       <h1>{reader} Records List</h1>
       <hr/>
         <div class='container'>

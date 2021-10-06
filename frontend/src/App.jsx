@@ -69,7 +69,7 @@ class App extends React.Component {
           <NotificationSystem ref={notificationSystem} />
           <NavBar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
           <Switch>
-          <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
+            <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
             <Route exact path="/booksList/:author?" component={BooksList}/>
             <Route exact path="/usersList" component={UsersList}/>
             <Route
@@ -175,8 +175,8 @@ function NavBar (props) {
       localStorage.setItem('isStaff', '');
       localStorage.setItem('name', '')
       props.refresh();
-      history.push('../login');
-      history.replace('../');
+      history.push('/login');
+      history.replace('/');
       }); 
   }
   return (

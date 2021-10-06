@@ -12,8 +12,8 @@ export function RequestsList(props) {
   const reader = props.match.params.reader;
   const [requestsList, setRequestsList] = useState();
   const history = useHistory();
-  const baseURL = 'server/api/requests';
-  let url = `server/api/${reader}/requests`;
+  const baseURL = '../server/api/requests';
+  let url = `../server/api/${reader}/requests`;
   
   function displayList(){
       
@@ -82,7 +82,7 @@ export function RequestsList(props) {
   }, [reader])
   
   return (
-    <div class='requestList'>
+    <div class='bookList'>
       <h1>{reader} Requests List</h1>
       <hr/>
         <div class='container'>
