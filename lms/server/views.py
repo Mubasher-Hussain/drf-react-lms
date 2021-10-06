@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from server.models import Book, Record, Request
-from server.permissions import IsStaffOrReadOnly, IsStaff, IsStaffOrReaderOnly
+from server.permissions import IsStaffOrReadOnly, IsStaff, IsStaffOrReaderOnly, IsUniqueOrStaffOnly
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer
 
 # Serve Single Page Application
