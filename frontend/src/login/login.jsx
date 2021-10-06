@@ -55,7 +55,7 @@ export class Login extends React.Component {
           </div>
         </div>
         <div className="footer">
-          <LoginButton formData={this.state.formData} createNotification={this.props.createNotification} />
+        <LoginButton formData={this.state.formData} createNotification={this.props.createNotification} refresh={this.props.refresh}/>
         </div>
       </div>
     );
@@ -74,10 +74,11 @@ function LoginButton(props) {
       if (!res.data.error){
         login(res);
         props.createNotification("Successfully logged in", 'success');
-        localStorage.setItem('isStaff', res.data.Staff ? true : '');
+        localStorage.setItem('isStaff', res.data.Staff ? "True" : '');
         localStorage.setItem('name', formData.username);
-        history.push('../booksList');
-        history.go(0);
+        history.push('../login');
+        history.replace('../');
+        props.refresh();
       }
       else{
         props.createNotification("Incorrect Username or password", 'error');

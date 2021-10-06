@@ -152,8 +152,8 @@ function RegisterButton(props) {
       }
       else{
         props.createNotification(res.data.success + '. Now Login', 'success');
-        history.push('../');
-        history.push('../login');
+        history.push('/');
+        history.push('/login');
       }
 
     })    

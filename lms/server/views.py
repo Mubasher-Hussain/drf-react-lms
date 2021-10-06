@@ -56,7 +56,7 @@ class RecordList(generics.ListCreateAPIView):
                 reader = self.kwargs['reader']
                 return Record.objects.filter(reader=reader).order_by('reader')
             except Record.DoesNotExist:
-                print('Reader not found')
+                print('Record not found')
         else:
             return Record.objects.all().order_by('reader')
     
@@ -95,12 +95,12 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
 class RequestList(generics.ListCreateAPIView):
     queryset = Request.objects.all().order_by('reader')
     serializer_class = RequestSerializer
+    permission_classes = [IsUniqueOrStaffOnly]
     def get_queryset(self):
         """For displaying requests of specific reader if reader is specified in url"""
         if self.kwargs:
             try:
-                reader = self.kwargs['reader']
-                return Request.objects.filter(reader=reader).order_by('status')
+                return Request.objects.filter(**self.kwargs).order_by('status')
             except Request.DoesNotExist:
                 print('Reader not found')
         else:
@@ -125,6 +125,7 @@ def register_reader(request):
             return JsonResponse({'success': "Registered as normal User."})
         except:
             return JsonResponse({'error': "Username or Email already exists"})
+
 
 def register_librarian(request):
     """For registering of staff"""
@@ -152,6 +153,7 @@ def login_request(request):
                 return JsonResponse({'User': 'Logged In'})
         else:
             return JsonResponse({'error': "Invalid username or password."})       
+
 
 def logout_request(request):
     logout(request)

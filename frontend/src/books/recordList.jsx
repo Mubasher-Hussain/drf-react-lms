@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  useHistory, 
+  useHistory,
+  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -12,7 +13,9 @@ export function RecordsList(props) {
   const reader = props.match.params.reader;
   const [recordsList, setRecordsList] = useState();
   const history = useHistory();
+  const location = useLocation();
   const baseURL = 'server/api/records';
+  const status = props.match.params.status;
   let url = `server/api/${reader}/records`;
   
   function displayList(){
@@ -21,7 +24,7 @@ export function RecordsList(props) {
       return recordsList.map((record)=>{
         return(         
           <div class="col-md-12">
-            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'../recordsList/' + record.reader} >{record.reader}</NavLink></p>
+            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></p>
             <p style={{ textAlign: 'left' }}>Book: {record.book}</p>
             <p style={{ textAlign: 'left' }}>Fine: {record.fine}</p>
             <div style={{textAlign: "left"}}>
@@ -39,12 +42,12 @@ export function RecordsList(props) {
                   date = date.toLocaleString('en-US', {timeZone : 'Asia/Karachi'});
                   date = new Date(date)
                   axios
-                  .patch(`server/api//record/${record.id}/return-book`,
+                  .patch(`server/api/record/${record.id}/return-book`,
                     {'return_date': date},
                     )
                   .then(res => {
                     props.createNotification(`Book '${record.book}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success');
-                    history.push('../');
+                    history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {
@@ -62,9 +65,21 @@ export function RecordsList(props) {
     })}
   }
   
+  function fetchRecord(command){
+    if(!status){
+      history.push(`${location.pathname}/${command}`);
+    }
+    else if(status!=command){
+      history.push(`./${command}`)
+    }
+  }
+
   useEffect(() => {
-    if (!reader){
+    if (!reader || reader=='All'){
       url = baseURL;
+    }
+    if (status){
+      url += `/${status}`
     }
     axios
     .get(url)
@@ -72,10 +87,10 @@ export function RecordsList(props) {
       setRecordsList(res.data);
     })
     .catch( (error) => props.createNotification(error.message, 'error'))
-  }, [reader])
+  }, [reader, status])
   
   return (
-    <div class='recordList'>
+    <div class='bookList'>
       <h1>{reader} Records List</h1>
       <hr/>
         <div class='container'>
