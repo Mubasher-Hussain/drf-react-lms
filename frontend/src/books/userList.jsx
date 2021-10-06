@@ -27,7 +27,19 @@ export function UsersList() {
     })}
   }
 
-  useEffect(() => {    
+  function search (item) {
+    var users = document.getElementsByTagName("h2");
+    for (var i=0 ; i<users.length ;  i++){
+      if (!users[i].textContent.match(item)){
+        users[i].parentElement.style.display = "none"
+      }
+      else
+        users[i].parentElement.style.display = "block"  
+    }
+  }
+  
+  useEffect(() => {
+    
     axios
     .get(url)
     .then(res => {
@@ -38,6 +50,10 @@ export function UsersList() {
   
   return (
     <div class='bookList'>
+      <SearchField 
+        placeholder='Search By Username'
+        onChange={search}
+      />
       <h1>Users List</h1>
       <hr/>
         <div class='container'>
