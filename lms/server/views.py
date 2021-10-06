@@ -33,7 +33,7 @@ class BooksList(generics.ListCreateAPIView):
             try:
                 author = self.kwargs['author']
                 return Book.objects.filter(author=author).order_by('title')
-            except User.DoesNotExist:
+            except Book.DoesNotExist:
                 print('Author not found')
         else:
             return Book.objects.all().order_by('title')
