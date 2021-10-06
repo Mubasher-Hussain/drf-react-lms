@@ -95,7 +95,7 @@ class ViewsTest(TestCase):
         self.assertEqual(user.email, 'abcd@b.com')
 
     def test_login(self):
-        User.objects.create_user(username='mhussain', email='abc@d.com', password= '1234567', is_staff=True)
+        User.objects.create_user(username='mhussain', email='abc@d.com', password= '1234567', is_staff=False)
         data = {'username': 'mhussain', 'password': '1234567'}
         response = self.client.generic('POST', '/server/api/login/', json.dumps(data))
         user = auth.get_user(self.client)
