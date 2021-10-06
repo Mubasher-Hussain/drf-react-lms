@@ -91,7 +91,7 @@ class ViewsTest(TestCase):
         
         # Confirms if user is in system by checking its email
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['success'], 'Registered.')
+        self.assertTrue(response.json()['success'])
         self.assertEqual(user.email, 'abcd@b.com')
 
     def test_login(self):
@@ -104,7 +104,7 @@ class ViewsTest(TestCase):
         self.assertTrue(user.is_authenticated)
         self.assertTrue(user.is_staff)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['Success'], 'Logged In')
+        self.assertTrue(response.json()['Staff'])
 
     def test_logout(self):
         User.objects.create_user(username='mhussain', email='abc@d.com', password= '1234567')
@@ -115,7 +115,7 @@ class ViewsTest(TestCase):
         # Confirms logout if client user is not authenticated
         self.assertFalse(user.is_authenticated)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['Success'], 'Logged Out')
+        self.assertTrue(response.json()['Success'])
 
     def test_book_detail(self):
         user = User.objects.create_user(username='mhussain', password='123')
@@ -165,11 +165,13 @@ class ViewsTest(TestCase):
         
         response = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
         
+        staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
+        self.client.login(username='mubashir', password='123')
+        
+        response2 = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
+        
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()['reader'], 'mhussain')
-        self.assertEqual(response.json()['book'], 'book1')
-        self.assertFalse(response.json()['return_date'])
-        self.assertEqual(response2.json()['status'], 'accepted')
+        self.assertEqual(response2.status_code, 201)
 
     def test_return_book_check_fine(self):
         user = User.objects.create_user(username='mhussain', password='123')

@@ -79,10 +79,12 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         """When book is returned, calculates fine if returned late more than 7 days"""
-        record = self.queryset[0]
-        return_date = datetime.datetime.fromisoformat(self.request.data['return_date'][:-1], )
-        aware_date = pytz.timezone('Asia/Karachi').localize(return_date)
-        issue_date = record.issue_date
+        record = self.get_object()
+        if self.request.data['return_date'].endswith('Z'):
+            return_date = datetime.datetime.fromisoformat(self.request.data['return_date'][:-1])
+            aware_date = pytz.timezone('Asia/Karachi').localize(return_date)
+        else:
+            aware_date = datetime.datetime.fromisoformat(self.request.data['return_date'])
         issue_period = ((aware_date - record.issue_date).total_seconds() // 86400)
         fine = 0
         if issue_period >= 7:
