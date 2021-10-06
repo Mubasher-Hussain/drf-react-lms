@@ -21,7 +21,7 @@ export function RecordsList(props) {
       return recordsList.map((record)=>{
         return(         
           <div class="col-md-12">
-            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'../recordsList/' + record.reader} >{record.reader}</NavLink></p>
+            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></p>
             <p style={{ textAlign: 'left' }}>Book: {record.book}</p>
             <p style={{ textAlign: 'left' }}>Fine: {record.fine}</p>
             <div style={{textAlign: "left"}}>
@@ -39,12 +39,12 @@ export function RecordsList(props) {
                   date = date.toLocaleString('en-US', {timeZone : 'Asia/Karachi'});
                   date = new Date(date)
                   axios
-                  .patch(`server/api//record/${record.id}/return-book`,
+                  .patch(`server/api/record/${record.id}/return-book`,
                     {'return_date': date},
                     )
                   .then(res => {
                     props.createNotification(`Book '${record.book}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success');
-                    history.push('../');
+                    history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {

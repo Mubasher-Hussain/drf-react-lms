@@ -21,7 +21,7 @@ export function RequestsList(props) {
       return requestsList.map((request)=>{
         return(         
           <div class="col-md-12">
-            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'../requestsList/' + request.reader} >{request.reader}</NavLink></p>
+            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'/requestsList/' + request.reader} >{request.reader}</NavLink></p>
             <p style={{ textAlign: 'left' }}>Book: {request.book}</p>
             <div style={{textAlign: "left"}}>
               <span class="badge">Status: {request.status}</span>
@@ -35,7 +35,7 @@ export function RequestsList(props) {
                   .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book})
                   .then(res => {
                     props.createNotification(`Book '${request.book}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success');
-                    history.push('../');
+                    history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {
@@ -52,7 +52,7 @@ export function RequestsList(props) {
                  .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})
                  .then(res => {
                    props.createNotification(`Issue Request for book '${request.book}' by User '${request.reader}' Rejected`, 'success');
-                   history.push('../')
+                   history.push('/')
                    history.goBack(); 
                  })
                  .catch((error) => {

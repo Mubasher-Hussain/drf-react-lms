@@ -46,7 +46,7 @@ export function BookDetails(props) {
             <div style={{textAlign: "left"}}>
               <span class="badge" tyle={{float: 'left'}}>Published: {bookDetails.book.published_on}</span>
               <div class="pull-right">
-                <span class="label label-default">Author: <NavLink to={'../booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></span>
+                <span class="label label-default">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></span>
               </div>         
             </div>    
             <hr/>
@@ -54,7 +54,7 @@ export function BookDetails(props) {
           {localStorage.getItem('isStaff') && (
             <p>
               <button className='btn' onClick={() => 
-                history.push({pathname: `../editBook/${pk}`,
+                history.push({pathname: `/editBook/${pk}`,
                               query: {title: bookDetails.book.title,
                                       summary: bookDetails.book.summary,
                                       author: bookDetails.book.author,
