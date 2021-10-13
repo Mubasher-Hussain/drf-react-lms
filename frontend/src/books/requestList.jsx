@@ -97,7 +97,6 @@ export function RequestsList(props) {
   
   return (
     <div class='bookList'>
-      
       <h1>{reader} Requests List</h1>
       <button 
         class="btn"

@@ -4,6 +4,7 @@ import pytz
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
@@ -16,7 +17,7 @@ from rest_framework.response import Response
 
 from server.models import Book, Record, Request
 from server.permissions import IsStaffOrReadOnly, IsStaff, IsStaffOrReaderOnly, IsUniqueOrStaffOnly
-from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer
+from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
@@ -44,6 +45,7 @@ class BooksDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsStaffOrReadOnly]
     queryset = Book.objects.all().order_by('title')
     serializer_class = BooksSerializer
+
 
 class RecordList(generics.ListCreateAPIView):
     permission_classes = [IsStaffOrReaderOnly]
@@ -114,6 +116,29 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsStaffOrReaderOnly]
     queryset = Request.objects.all().order_by('reader')
     serializer_class = RequestSerializer
+
+
+class UsersList(generics.ListAPIView):
+    """Lists all users"""
+    permission_classes = [IsStaff]
+    queryset = User.objects.filter(is_staff=False).order_by('username')
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete user"""
+    permission_classes = [IsStaff]
+    queryset = User.objects.filter(is_staff=False).order_by('username')
+    serializer_class = UserSerializer
+    def retrieve(self, request, pk):
+        """For adding fine for retreived user"""
+        data = {}
+        user_obj = self.get_object()
+        user_serialized = self.serializer_class(user_obj)
+        data['user'] = user_serialized.data
+        overdue = user_obj.record_set.aggregate(Sum('fine'))
+        data['fine'] = overdue['fine__sum']
+        return Response(data)
 
 
 def register_reader(request):

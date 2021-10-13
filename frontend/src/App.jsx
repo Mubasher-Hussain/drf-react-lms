@@ -13,7 +13,7 @@ import axios from "./auth/axiosConfig";
 import "./App.scss";
 import { Login, Register } from "./login/index";
 import { logout, useAuth } from "./auth";
-import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList } from "./books";
+import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList } from "./books";
 
 import NotificationSystem from 'react-notification-system';
  
@@ -71,6 +71,7 @@ class App extends React.Component {
           <Switch>
             <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
             <Route exact path="/booksList/:author?" component={BooksList}/>
+            <Route exact path="/usersList" component={UsersList}/>
             <Route
               exact path="/requestsList/:reader?/:status?"
               children={({match}) => (
@@ -87,6 +88,12 @@ class App extends React.Component {
               exact path="/bookDetails/:pk"
               children={({match}) => (
                 <BookDetails createNotification={this.createNotification} match={match} />
+              )}
+            />
+            <Route
+              exact path="/userDetails/:pk"
+              children={({match}) => (
+                <UserDetails createNotification={this.createNotification} match={match} />
               )}
             />
             <PrivateRoute
@@ -168,8 +175,8 @@ function NavBar (props) {
       localStorage.setItem('isStaff', '');
       localStorage.setItem('name', '')
       props.refresh();
-      history.push('../login');
-      history.replace('../');
+      history.push('/login');
+      history.replace('/');
       }); 
   }
   return (
@@ -199,14 +206,23 @@ function NavBar (props) {
           New Book
           </button>
           }
-          
+          {isStaff && 
+          <button class="btn"
+            onClick={() =>{
+              history.push('/usersList')
+            }}
+          >
+          User List
+          </button>
+          }
+
           <button class="btn"
             onClick={() =>{
               if (!logged){
                 props.createNotification(
                   'You need to login first. Redirecting in 5s....',
                   'warning',
-                  <Link to='../login'>Login</Link>)
+                  <Link to='/login'>Login</Link>)
                 setTimeout(() => history.push('/login'), 5000)
               }
               else{
@@ -227,7 +243,7 @@ function NavBar (props) {
                   'You need to login first. Redirecting in 5s....',
                   'warning',
                   <Link to='/login'>Login</Link>)
-                setTimeout(() => history.push('../login'), 5000)
+                setTimeout(() => history.push('/login'), 5000)
               }
               else{
                 if (isStaff)
