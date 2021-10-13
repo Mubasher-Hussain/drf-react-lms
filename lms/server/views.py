@@ -102,8 +102,7 @@ class RequestList(generics.ListCreateAPIView):
         """For displaying requests of specific reader if reader is specified in url"""
         if self.kwargs:
             try:
-                reader = self.kwargs['reader']
-                return Request.objects.filter(reader=reader).order_by('status')
+                return Request.objects.filter(**self.kwargs).order_by('status')
             except Request.DoesNotExist:
                 print('Reader not found')
         else:

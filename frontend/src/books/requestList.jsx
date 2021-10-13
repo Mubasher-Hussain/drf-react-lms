@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  useHistory, 
+  useHistory,
+  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -12,11 +13,12 @@ export function RequestsList(props) {
   const reader = props.match.params.reader;
   const [requestsList, setRequestsList] = useState();
   const history = useHistory();
+  const location = useLocation();
   const baseURL = '../server/api/requests';
+  const status = props.match.params.status;
   let url = `../server/api/${reader}/requests`;
   
-  function displayList(){
-      
+  function displayList(){   
     if (requestsList && requestsList.length){
       return requestsList.map((request)=>{
         return(         
@@ -69,9 +71,21 @@ export function RequestsList(props) {
     })}
   }
   
+  function fetchRequest(command){
+    if(!status){
+      history.push(`${location.pathname}/${command}`);
+    }
+    else if(status!=command){
+      history.push(`./${command}`)
+    }
+  }
+
   useEffect(() => {
-    if (!reader){
+    if (!reader || reader=='All'){
       url = baseURL;
+    }
+    if (status){
+      url += `/${status}`
     }
     axios
     .get(url)
@@ -79,11 +93,29 @@ export function RequestsList(props) {
       setRequestsList(res.data);
     })
     .catch( (error) => props.createNotification(error.message, 'error'))  
-  }, [reader])
+  }, [reader, status])
   
   return (
     <div class='bookList'>
       <h1>{reader} Requests List</h1>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('pending') }
+      >
+        Pending
+      </button>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('accepted') }
+      >
+        Accepted
+      </button>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('rejected') }
+      >
+        Rejected
+      </button>
       <hr/>
         <div class='container'>
           { displayList() }

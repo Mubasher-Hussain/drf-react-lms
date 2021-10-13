@@ -23,8 +23,11 @@ urlpatterns = [
     path('api/login/', views.login_request, name="login"),
     path('api/logout/', views.logout_request, name="logout"),
     path('api/requests', views.RequestList.as_view(), name="request_display"),
+    path('api/requests/create', views.RequestList.as_view(), name="create_book"),
+    path('api/requests/<str:status>', views.RequestList.as_view(), name="request_display"),
     path('api/<str:reader>/requests', views.RequestList.as_view(), name="request_display"),
     path('api/requests/create', views.RequestList.as_view(), name="create_book"),
+    path('api/<str:reader>/requests/<str:status>', views.RequestList.as_view(), name="request_display_status"),
     path('api/request/<int:pk>/delete', views.RequestDetail.as_view(), name="request_finished"),
     path('api/request/<int:pk>/edit', views.RequestDetail.as_view(), name="request_denied"),
     path('api/request/<int:pk>', views.RequestDetail.as_view(), name="check_request"),
@@ -33,6 +36,7 @@ urlpatterns = [
     path('api/record/<int:pk>/return-book', views.RecordDetail.as_view(), name="return_book"),
     path('api/record/<int:pk>', views.RecordDetail.as_view(), name="check_record"),
     path('api/<str:reader>/records', views.RecordList.as_view(), name="check_record"),
+    path('api/<str:reader>/records/<str:status>', views.RecordList.as_view(), name="check_pending_record"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

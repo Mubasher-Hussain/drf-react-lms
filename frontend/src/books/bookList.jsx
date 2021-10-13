@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
+import SearchField from 'react-search-field';
+
 import axios from "../auth/axiosConfig";
 
 
@@ -30,6 +32,17 @@ export function BooksList({match}) {
     })}
   }
   
+  function search (item) {
+    var titles = document.getElementsByTagName("h2");
+    for (var i=0 ; i<titles.length ;  i++){
+      if (!titles[i].textContent.match(item)){
+        titles[i].parentElement.style.display = "none"
+      }
+      else
+        titles[i].parentElement.style.display = "block"  
+    }
+  }
+ 
   useEffect(() => {
     if (!author){
       url = baseURL;
@@ -44,6 +57,10 @@ export function BooksList({match}) {
   
   return (
     <div class='bookList'>
+      <SearchField 
+        placeholder='Search By Book Title'
+        onChange={search}
+      />
       <h1>{author} Books List</h1>
       <hr/>
         <div class='container'>

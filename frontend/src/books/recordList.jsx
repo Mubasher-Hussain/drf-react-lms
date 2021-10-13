@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  useHistory, 
+  useHistory,
+  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -12,7 +13,9 @@ export function RecordsList(props) {
   const reader = props.match.params.reader;
   const [recordsList, setRecordsList] = useState();
   const history = useHistory();
+  const location = useLocation();
   const baseURL = 'server/api/records';
+  const status = props.match.params.status;
   let url = `server/api/${reader}/records`;
   
   function displayList(){
@@ -62,9 +65,21 @@ export function RecordsList(props) {
     })}
   }
   
+  function fetchRecord(command){
+    if(!status){
+      history.push(`${location.pathname}/${command}`);
+    }
+    else if(status!=command){
+      history.push(`./${command}`)
+    }
+  }
+
   useEffect(() => {
-    if (!reader){
+    if (!reader || reader=='All'){
       url = baseURL;
+    }
+    if (status){
+      url += `/${status}`
     }
     axios
     .get(url)
@@ -72,7 +87,7 @@ export function RecordsList(props) {
       setRecordsList(res.data);
     })
     .catch( (error) => props.createNotification(error.message, 'error'))
-  }, [reader])
+  }, [reader, status])
   
   return (
     <div class='bookList'>

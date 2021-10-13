@@ -73,13 +73,13 @@ class App extends React.Component {
             <Route exact path="/booksList/:author?" component={BooksList}/>
             <Route exact path="/usersList" component={UsersList}/>
             <Route
-              exact path="/requestsList/:reader?"
+              exact path="/requestsList/:reader?/:status?"
               children={({match}) => (
                 <RequestsList createNotification={this.createNotification} match={match} />
               )}
             />
             <Route
-              exact path="/recordsList/:reader?"
+              exact path="/recordsList/:reader?/:status?"
               children={({match}) => (
                 <RecordsList createNotification={this.createNotification} match={match} />
               )}
