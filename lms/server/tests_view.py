@@ -155,23 +155,6 @@ class ViewsTest(TestCase):
         self.assertEqual(response.json()['book'], 'book1')
         self.assertFalse(response.json()['return_date'])
         self.assertEqual(response2.json()['status'], 'accepted')
-    
-    def test_issue_book_permission(self):
-    
-        user = User.objects.create_user(username='mhussain', password='123')
-        self.client.login(username='mhussain', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
-        self.client.post('/server/api/requests/create', {'book': 'book1'})
-        
-        response = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
-        
-        staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
-        self.client.login(username='mubashir', password='123')
-        
-        response2 = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
-        
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response2.status_code, 201)
 
     def test_return_book_check_fine(self):
         user = User.objects.create_user(username='mhussain', password='123')
@@ -192,3 +175,35 @@ class ViewsTest(TestCase):
         self.assertEqual(response1.json()['book'], 'book1')
         self.assertTrue(response1.json()['return_date'])
         self.assertEqual(response1.json()['fine'], 200)
+
+    def test_user_edit(self):
+        """Staff can edit Users info"""
+        user = User.objects.create_user(id=1, username='mhussain', password='123')
+
+        staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
+        self.client.login(username='mubashir', password='123')
+
+        # Staff editing user info
+        response_staff = self.client.patch('/server/api/user/1/edit', {'email': 'a@c.com'}, content_type='application/json')
+
+        self.assertEqual(response_staff.status_code, 200)
+        self.assertEqual(response_staff.json()['email'], 'a@c.com')
+    
+    def test_user_view_info(self):
+        """Get user Info including their total fine"""
+        user = User.objects.create_user(id=1, username='mhussain', email='a@c.com', password='123')
+        self.client.login(username='mhussain', password='123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        Record.objects.create(book=book, reader=auth.get_user(self.client), fine=100)
+        Record.objects.create(book=book, reader=auth.get_user(self.client), fine=200)
+                
+        staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
+        self.client.login(username='mubashir', password='123')
+
+        # Staff accessing user info
+        response = self.client.get('/server/api/user/1')
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['fine'], 300)
+        self.assertTrue(response.json()['user']['email'])
+        self.assertTrue(response.json()['user']['username'])
