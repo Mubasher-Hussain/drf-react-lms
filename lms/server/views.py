@@ -120,14 +120,14 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class UsersList(generics.ListAPIView):
     """Lists all users"""
-    permission_classes = [IsStaff]
+    permission_classes = [IsStaffOrSelfReadOnly]
     queryset = User.objects.filter(is_staff=False).order_by('username')
     serializer_class = UserSerializer
 
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update or delete user"""
-    permission_classes = [IsStaff]
+    permission_classes = [IsStaffOrSelfReadOnly]
     queryset = User.objects.filter(is_staff=False).order_by('username')
     serializer_class = UserSerializer
     def retrieve(self, request, pk):
