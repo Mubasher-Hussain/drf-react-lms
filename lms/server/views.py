@@ -4,6 +4,7 @@ import pytz
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
@@ -15,8 +16,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from server.models import Book, Record, Request
-from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly
-from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer
+from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly
+from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
@@ -33,7 +34,7 @@ class BooksList(generics.ListCreateAPIView):
             try:
                 author = self.kwargs['author']
                 return Book.objects.filter(author=author).order_by('title')
-            except User.DoesNotExist:
+            except Book.DoesNotExist:
                 print('Author not found')
         else:
             return Book.objects.all().order_by('title')
@@ -44,6 +45,7 @@ class BooksDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsStaffOrReadOnly]
     queryset = Book.objects.all().order_by('title')
     serializer_class = BooksSerializer
+
 
 class RecordList(generics.ListCreateAPIView):
     permission_classes = [IsStaffOrReaderOnly]
@@ -56,7 +58,7 @@ class RecordList(generics.ListCreateAPIView):
                 reader = self.kwargs['reader']
                 return Record.objects.filter(reader=reader).order_by('reader')
             except Record.DoesNotExist:
-                print('Reader not found')
+                print('Record not found')
         else:
             return Record.objects.all().order_by('reader')
     
@@ -95,12 +97,12 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
 class RequestList(generics.ListCreateAPIView):
     queryset = Request.objects.all().order_by('reader')
     serializer_class = RequestSerializer
+    permission_classes = [IsUniqueOrStaffOnly]
     def get_queryset(self):
         """For displaying requests of specific reader if reader is specified in url"""
         if self.kwargs:
             try:
-                reader = self.kwargs['reader']
-                return Request.objects.filter(reader=reader).order_by('status')
+                return Request.objects.filter(**self.kwargs).order_by('status')
             except Request.DoesNotExist:
                 print('Reader not found')
         else:
@@ -116,6 +118,29 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RequestSerializer
 
 
+class UsersList(generics.ListAPIView):
+    """Lists all users"""
+    permission_classes = [IsStaff]
+    queryset = User.objects.filter(is_staff=False).order_by('username')
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete user"""
+    permission_classes = [IsStaff]
+    queryset = User.objects.filter(is_staff=False).order_by('username')
+    serializer_class = UserSerializer
+    def retrieve(self, request, pk):
+        """For adding fine for retreived user"""
+        data = {}
+        user_obj = self.get_object()
+        user_serialized = self.serializer_class(user_obj)
+        data['user'] = user_serialized.data
+        overdue = user_obj.record_set.aggregate(Sum('fine'))
+        data['fine'] = overdue['fine__sum']
+        return Response(data)
+
+
 def register_reader(request):
     """For registering of normal readers"""
     if request.method == 'POST':
@@ -125,6 +150,7 @@ def register_reader(request):
             return JsonResponse({'success': "Registered as normal User."})
         except:
             return JsonResponse({'error': "Username or Email already exists"})
+
 
 def register_librarian(request):
     """For registering of staff"""
@@ -152,6 +178,7 @@ def login_request(request):
                 return JsonResponse({'User': 'Logged In'})
         else:
             return JsonResponse({'error': "Invalid username or password."})       
+
 
 def logout_request(request):
     logout(request)

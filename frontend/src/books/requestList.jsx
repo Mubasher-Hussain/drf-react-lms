@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  useHistory, 
+  useHistory,
+  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -12,16 +13,17 @@ export function RequestsList(props) {
   const reader = props.match.params.reader;
   const [requestsList, setRequestsList] = useState();
   const history = useHistory();
-  const baseURL = 'server/api/requests';
-  let url = `server/api/${reader}/requests`;
+  const location = useLocation();
+  const baseURL = '../server/api/requests';
+  const status = props.match.params.status;
+  let url = `../server/api/${reader}/requests`;
   
-  function displayList(){
-      
+  function displayList(){   
     if (requestsList && requestsList.length){
       return requestsList.map((request)=>{
         return(         
           <div class="col-md-12">
-            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'../requestsList/' + request.reader} >{request.reader}</NavLink></p>
+            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'/requestsList/' + request.reader} >{request.reader}</NavLink></p>
             <p style={{ textAlign: 'left' }}>Book: {request.book}</p>
             <div style={{textAlign: "left"}}>
               <span class="badge">Status: {request.status}</span>
@@ -35,7 +37,7 @@ export function RequestsList(props) {
                   .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book})
                   .then(res => {
                     props.createNotification(`Book '${request.book}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success');
-                    history.push('../');
+                    history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {
@@ -52,7 +54,7 @@ export function RequestsList(props) {
                  .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})
                  .then(res => {
                    props.createNotification(`Issue Request for book '${request.book}' by User '${request.reader}' Rejected`, 'success');
-                   history.push('../')
+                   history.push('/')
                    history.goBack(); 
                  })
                  .catch((error) => {
@@ -69,9 +71,21 @@ export function RequestsList(props) {
     })}
   }
   
+  function fetchRequest(command){
+    if(!status){
+      history.push(`${location.pathname}/${command}`);
+    }
+    else if(status!=command){
+      history.push(`./${command}`)
+    }
+  }
+
   useEffect(() => {
-    if (!reader){
+    if (!reader || reader=='All'){
       url = baseURL;
+    }
+    if (status){
+      url += `/${status}`
     }
     axios
     .get(url)
@@ -79,11 +93,29 @@ export function RequestsList(props) {
       setRequestsList(res.data);
     })
     .catch( (error) => props.createNotification(error.message, 'error'))  
-  }, [reader])
+  }, [reader, status])
   
   return (
-    <div class='requestList'>
+    <div class='bookList'>
       <h1>{reader} Requests List</h1>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('pending') }
+      >
+        Pending
+      </button>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('accepted') }
+      >
+        Accepted
+      </button>
+      <button 
+        class="btn"
+        onClick={() => fetchRequest('rejected') }
+      >
+        Rejected
+      </button>
       <hr/>
         <div class='container'>
           { displayList() }

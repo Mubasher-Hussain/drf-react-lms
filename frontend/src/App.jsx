@@ -13,7 +13,7 @@ import axios from "./auth/axiosConfig";
 import "./App.scss";
 import { Login, Register } from "./login/index";
 import { logout, useAuth } from "./auth";
-import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList } from "./books";
+import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList } from "./books";
 
 import NotificationSystem from 'react-notification-system';
  
@@ -26,9 +26,16 @@ class App extends React.Component {
     super(props);
     this.state = {
       isLogginActive: true,
+      name: '',
     };
   }
 
+  // Changes state to refresh page in case of changes like login or logout
+  refresh() {
+    this.setState({
+      name: localStorage.getItem('name')
+    });
+  }
 
   // For animating register and login container via onclick
   changeState() {
@@ -60,18 +67,19 @@ class App extends React.Component {
       <Router>
         <div className="App">
           <NotificationSystem ref={notificationSystem} />
-          <NavBar createNotification={this.createNotification}/>
+          <NavBar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
           <Switch>
-            <Route exact path='/'><Redirect to='../booksList'></Redirect></Route>
+            <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
             <Route exact path="/booksList/:author?" component={BooksList}/>
+            <Route exact path="/usersList" component={UsersList}/>
             <Route
-              exact path="/requestsList/:reader?"
+              exact path="/requestsList/:reader?/:status?"
               children={({match}) => (
                 <RequestsList createNotification={this.createNotification} match={match} />
               )}
             />
             <Route
-              exact path="/recordsList/:reader?"
+              exact path="/recordsList/:reader?/:status?"
               children={({match}) => (
                 <RecordsList createNotification={this.createNotification} match={match} />
               )}
@@ -80,6 +88,12 @@ class App extends React.Component {
               exact path="/bookDetails/:pk"
               children={({match}) => (
                 <BookDetails createNotification={this.createNotification} match={match} />
+              )}
+            />
+            <Route
+              exact path="/userDetails/:pk"
+              children={({match}) => (
+                <UserDetails createNotification={this.createNotification} match={match} />
               )}
             />
             <PrivateRoute
@@ -96,7 +110,7 @@ class App extends React.Component {
               <div className="login">
                 <div className="container" ref={ref => (this.container = ref)}>
                   {isLogginActive && (
-                    <Login containerRef={ref => (this.current = ref)} createNotification={this.createNotification}
+                    <Login containerRef={ref => (this.current = ref)} createNotification={this.createNotification} refresh={this.refresh.bind(this)}
                     />
                   )}
                   {!isLogginActive && (
@@ -159,8 +173,10 @@ function NavBar (props) {
       logout();
       props.createNotification('Logged Out', 'success');
       localStorage.setItem('isStaff', '');
-      history.go(0);
-      history.push('../');
+      localStorage.setItem('name', '')
+      props.refresh();
+      history.push('/login');
+      history.replace('/');
       }); 
   }
   return (
@@ -175,36 +191,45 @@ function NavBar (props) {
             }
           {!logged && 
             <li class="nav-item">
-              <button class="btn" onClick={() => history.push('../login')}>Login</button>
+              <button class="btn" onClick={() => history.push('/login')}>Login</button>
             </li>
             }
           <li class="nav-item">
-          <button class="btn" onClick={() => history.push('../booksList')}>books List</button>
+          <button class="btn" onClick={() => history.push('/booksList')}>books List</button>
           </li>
           {isStaff && 
           <button class="btn"
             onClick={() =>{
-              history.push('../createBook')
+              history.push('/createBook')
             }}
           >
           New Book
           </button>
           }
-          
+          {isStaff && 
+          <button class="btn"
+            onClick={() =>{
+              history.push('/usersList')
+            }}
+          >
+          User List
+          </button>
+          }
+
           <button class="btn"
             onClick={() =>{
               if (!logged){
                 props.createNotification(
                   'You need to login first. Redirecting in 5s....',
                   'warning',
-                  <Link to='../login'>Login</Link>)
-                setTimeout(() => history.push('../login'), 5000)
+                  <Link to='/login'>Login</Link>)
+                setTimeout(() => history.push('/login'), 5000)
               }
               else{
                 if (isStaff)
-                  history.push('../requestsList');
+                  history.push('/requestsList');
                 else
-                  history.push(`../requestsList/${localStorage.getItem('name')}`);
+                  history.push(`/requestsList/${localStorage.getItem('name')}`);
               }
             }}
           >
@@ -217,14 +242,14 @@ function NavBar (props) {
                 props.createNotification(
                   'You need to login first. Redirecting in 5s....',
                   'warning',
-                  <Link to='../login'>Login</Link>)
-                setTimeout(() => history.push('../login'), 5000)
+                  <Link to='/login'>Login</Link>)
+                setTimeout(() => history.push('/login'), 5000)
               }
               else{
                 if (isStaff)
-                  history.push('../recordsList');
+                  history.push('/recordsList');
                 else
-                  history.push(`../recordsList/${localStorage.getItem('name')}`);
+                  history.push(`/recordsList/${localStorage.getItem('name')}`);
               }
             }}
           >
@@ -245,7 +270,7 @@ const PrivateRoute = ({ component: Component, createNotification=createNotificat
   return <Route {...rest} render={({match}) => (
       isStaff
         ? <Component createNotification={createNotification} match={match} />
-        : <Redirect to='../login' />
+        : <Redirect to='/login' />
     )} />
 }
 
