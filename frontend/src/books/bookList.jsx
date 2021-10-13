@@ -11,18 +11,17 @@ export function BooksList({match}) {
   const baseURL = 'server/api/books';
   let url = `server/api/${author}/books`;
   
-  function displayList(){
-      
+  function displayList(){     
     if (booksList && booksList.length){
       return booksList.map((book)=>{
         return(         
           <div class="col-md-12">
-            <h2><NavLink to={'../bookDetails/' + book.id} >{book.title}</NavLink></h2>
+            <h2><NavLink to={'/bookDetails/' + book.id} >{book.title}</NavLink></h2>
             <p style={{ textAlign: 'left' }}>{book.summary.substring(0,50)}{book.summary.length>50 &&('........')}</p>
             <div style={{textAlign: "left"}}>
               <span class="badge">Published On: {book.published_on}</span>
               <div class="pull-right">
-                <span class="label label-default">Author: <NavLink to={'../booksList/' + book.author} >{book.author}</NavLink></span>
+                <span class="label label-default">Author: <NavLink to={'/booksList/' + book.author} >{book.author}</NavLink></span>
               </div>         
             </div>    
             <hr/>
