@@ -8,9 +8,15 @@ import { BookFormat } from "./bookFormat";
 // For creating new book
 export function NewBook (props){
   const history = useHistory();
-  function handleClick (blogData) {
+  function handleClick (bookData) {
+    let form_data = new FormData();
+    form_data.append('cover', bookData.cover, bookData.cover.name);
+    form_data.append('title', bookData.title);
+    form_data.append('summary', bookData.summary);
+    form_data.append('author', bookData.author);
+    form_data.append('published_on', bookData.published_on);
     axios
-    .post('server/api/books/create', blogData)
+    .post('server/api/books/create', form_data)
     .then(res => {
       props.createNotification('Book Created', 'success')
       history.goBack(); 

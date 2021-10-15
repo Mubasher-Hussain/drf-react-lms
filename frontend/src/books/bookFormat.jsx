@@ -1,6 +1,5 @@
 import React from "react";
 
-
 // Title and summary field for creating or editing a book
 export class BookFormat extends React.Component{
   
@@ -8,6 +7,7 @@ export class BookFormat extends React.Component{
     super(props);
     this.state = {
       bookData: {
+        cover: null,
         title: '',
         summary: '',
         author: '',
@@ -27,7 +27,10 @@ export class BookFormat extends React.Component{
   
   handleInputChange(event) {
     let bookData=this.state.bookData;
-    bookData[event.target.name]=event.target.value;
+    if(event.target.name == 'cover')
+      bookData[event.target.name] = event.target.files[0];
+    else    
+      bookData[event.target.name] = event.target.value;
     this.setState({
       bookData: bookData
     });
@@ -36,6 +39,17 @@ export class BookFormat extends React.Component{
   render(){
     return (
       <div className="container">
+        <div class="form-group" >
+          <label style= {{float: 'left'}} htmlFor="cover">Cover Photo</label>
+          <input type="file"
+            class="form-control"
+            name="cover"
+            placeholder="Cover Photo"
+            onChange={this.handleInputChange.bind(this)}
+            accept="image/png, image/jpeg"
+            style={{fontSize: '16px'}}
+          />
+        </div>
         <div class="form-group" >
           <label style= {{float: 'left'}} htmlFor="title">Title</label>
           <input type="text"
@@ -48,7 +62,7 @@ export class BookFormat extends React.Component{
           />
         </div>
         <div class="form-group" >
-          <label style= {{float: 'left'}} htmlFor="author">Title</label>
+          <label style= {{float: 'left'}} htmlFor="author">Author</label>
           <input type="text"
             class="form-control"
             name="author"
@@ -84,3 +98,4 @@ export class BookFormat extends React.Component{
     );
   }
 }
+

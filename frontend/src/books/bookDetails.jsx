@@ -40,6 +40,9 @@ export function BookDetails(props) {
         <div>
           <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
             <h1>{bookDetails.book.title}</h1>
+            <div>
+              <img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
+            </div>
             <hr/>
             <p style={{minHeight: '100px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
             <hr/>
@@ -100,6 +103,7 @@ export function BookDetails(props) {
       <div class='container'>
         { displayDetail()}
       </div>
+
     </div>
   )
 }

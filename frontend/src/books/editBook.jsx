@@ -12,8 +12,14 @@ export  function EditBook (props){
   const {query} = useLocation();
   const history = useHistory();
   function handleClick (bookData) {
+    let form_data = new FormData();
+    form_data.append('cover', bookData.cover, bookData.cover.name);
+    form_data.append('title', bookData.title);
+    form_data.append('summary', bookData.summary);
+    form_data.append('author', bookData.author);
+    form_data.append('published_on', bookData.published_on);
     axios
-    .put(`server/api/book/${pk}/edit`, bookData)
+    .put(`server/api/book/${pk}/edit`, form_data)
     .then(res => {
       props.createNotification('book Updated', 'success');
       history.goBack();

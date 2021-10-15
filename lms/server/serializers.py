@@ -6,14 +6,14 @@ from .models import Book, Record, Request
 class BooksSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ('id', 'title', 'summary', 'author', 'published_on')
+        fields = ('id', 'cover', 'title', 'summary', 'author', 'published_on')
 
 
 class RecordSerializer(serializers.ModelSerializer):
     fine = serializers.ReadOnlyField()
     class Meta:
         model = Record
-        fields = ('id', 'reader', 'book', 'issue_date', 'issue_date', 'return_date', 'fine')
+        fields = ('id', 'reader', 'book', 'issue_date', 'return_date', 'fine')
 
 
 class RequestSerializer(serializers.ModelSerializer):

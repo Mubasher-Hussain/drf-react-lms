@@ -14,6 +14,7 @@ from django.utils import timezone
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from server.models import Book, Record, Request
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly
@@ -26,6 +27,7 @@ index = never_cache(TemplateView.as_view(template_name='index.html'))
 class BooksList(generics.ListCreateAPIView):
     """List all books, or create a new book"""
     permission_classes = [IsStaffOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser)
     queryset = Book.objects.all().order_by('title')
     serializer_class = BooksSerializer
     def get_queryset(self):

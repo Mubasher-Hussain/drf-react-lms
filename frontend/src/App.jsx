@@ -13,7 +13,7 @@ import axios from "./auth/axiosConfig";
 import "./App.scss";
 import { Login, Register } from "./login/index";
 import { logout, useAuth } from "./auth";
-import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList } from "./books";
+import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
 
 import NotificationSystem from 'react-notification-system';
  
@@ -67,7 +67,7 @@ class App extends React.Component {
       <Router>
         <div className="App">
           <NotificationSystem ref={notificationSystem} />
-          <NavBar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
+          <Sidebar />
           <Switch>
             <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
             <Route exact path="/booksList/:author?" component={BooksList}/>
@@ -82,6 +82,12 @@ class App extends React.Component {
               exact path="/recordsList/:reader?/:status?"
               children={({match}) => (
                 <RecordsList createNotification={this.createNotification} match={match} />
+              )}
+            />
+            <Route
+              exact path="/analysis/:reader?/:status?"
+              children={({match}) => (
+                <Analysis createNotification={this.createNotification} match={match} />
               )}
             />
             <Route
