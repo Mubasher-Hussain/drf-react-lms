@@ -4,7 +4,7 @@ import pytz
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
@@ -141,6 +141,17 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         overdue = user_obj.record_set.aggregate(Sum('fine'))
         data['fine'] = overdue['fine__sum']
         return Response(data)
+
+
+def book_graph(request, reader=None):    
+    output = {}
+    if reader:
+        data = Record.objects.filter(reader=reader).values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
+    else:
+        data = Record.objects.values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
+    for obj in list(data):
+        output[obj['book']] = obj['books_issued']
+    return JsonResponse(output)
 
 
 def register_reader(request):

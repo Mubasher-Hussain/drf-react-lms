@@ -43,6 +43,7 @@ export function UserDetails(props) {
             <p style={{ textAlign: 'left' }}>Fine: {userDetails.fine}</p>
             <hr/>
             <div style={{textAlign: "left"}}>
+              <span class="badge"><NavLink to={'/analysis/' + userDetails.user.username} >Analysis</NavLink></span>
               <span class="badge"><NavLink to={'/recordsList/' + userDetails.user.username} >Records</NavLink></span>
               <span class="badge"><NavLink to={'/requestsList/' + userDetails.user.username} >Requests</NavLink></span>
             </div>  

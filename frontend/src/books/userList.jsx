@@ -22,6 +22,7 @@ export function UsersList() {
             <td>{user.email}</td>
             <td>{user.date_joined}</td>
             <td>
+              <span class="badge"><NavLink to={'/analysis/' + user.username} >Analysis</NavLink></span>
               <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
               <span class="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
             </td>

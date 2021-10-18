@@ -44,7 +44,7 @@ export function RecordsList(props) {
       return recordsList.map((record)=>{
         return(         
           <tr>
-            <td><NavLink to={'/requestsList/' + record.reader} >{record.reader}</NavLink></td>
+            <td><NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></td>
             <td className='title'>{record.book.title}</td>
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ record.book.cover } /></td>
             <td>{new Date(record.issue_date).toString()}</td>
