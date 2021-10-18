@@ -103,7 +103,6 @@ export function BookDetails(props) {
       <div class='container'>
         { displayDetail()}
       </div>
-
     </div>
   )
 }

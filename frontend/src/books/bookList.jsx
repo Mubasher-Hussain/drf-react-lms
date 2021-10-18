@@ -5,7 +5,7 @@ import SearchField from 'react-search-field';
 
 import axios from "../auth/axiosConfig";
 
-import Table from "react-bootstrap/Table"
+import Table from "react-bootstrap/Table";
 // Displays All Books or specific by author
 export function BooksList({match}) {
   const author = match.params.author;

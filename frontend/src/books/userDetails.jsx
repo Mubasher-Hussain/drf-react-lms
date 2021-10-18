@@ -63,7 +63,7 @@ export function UserDetails(props) {
   
   
   return (
-    <div class="userList">
+    <div class="bookList">
       <div class='container'>
         { displayDetail()}
       </div>

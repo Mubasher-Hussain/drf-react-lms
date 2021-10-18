@@ -5,24 +5,27 @@ import SearchField from 'react-search-field';
 
 import axios from "../auth/axiosConfig";
 
+import Table from "react-bootstrap/Table";
 
 // Displays All Users or specific by author
 export function UsersList() {
   const [usersList, setUsersList] = useState();
   const url = 'server/api/users';
 
-  function displayList(){     
+  function displayList(filter){     
     if (usersList && usersList.length){
       return usersList.map((user)=>{
         return(         
-          <div class="col-md-12">
-            <h2><NavLink to={'/userDetails/' + user.id} >{user.username}</NavLink></h2>
-            <div style={{textAlign: "left"}}>
+          <tr>
+            <td>{user.id}</td>
+            <td className='title'><NavLink to={'/userDetails/' + user.id} >{user.username}</NavLink></td>
+            <td>{user.email}</td>
+            <td>{user.date_joined}</td>
+            <td>
               <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
               <span class="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
-            </div>    
-            <hr/>
-          </div>            
+            </td>
+          </tr>            
         )
     })}
   }
@@ -38,8 +41,7 @@ export function UsersList() {
     }
   }
   
-  useEffect(() => {
-    
+  useEffect(() => {  
     axios
     .get(url)
     .then(res => {
@@ -56,9 +58,20 @@ export function UsersList() {
       />
       <h1>Users List</h1>
       <hr/>
-        <div class='container'>
-          { displayList() }
-        </div>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Joining Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayList()}
+          </tbody>
+        </Table>
     </div>
   )
 }

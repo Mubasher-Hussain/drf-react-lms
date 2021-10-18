@@ -42,6 +42,6 @@ class IsStaffOrSelfReadOnly(permissions.BasePermission):
         return request.user.is_staff
     
     def has_permission(self, request, view):
-        if 'pk' in view.kwargs:
+        if 'pk' in view.kwargs or 'username' in view.kwargs:
             return True
         return request.user.is_staff

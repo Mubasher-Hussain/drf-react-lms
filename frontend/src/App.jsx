@@ -67,7 +67,7 @@ class App extends React.Component {
       <Router>
         <div className="App">
           <NotificationSystem ref={notificationSystem} />
-          <Sidebar />
+          <Sidebar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
           <Switch>
             <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
             <Route exact path="/booksList/:author?" component={BooksList}/>

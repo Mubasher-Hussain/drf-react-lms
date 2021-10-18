@@ -76,6 +76,7 @@ function LoginButton(props) {
         props.createNotification("Successfully logged in", 'success');
         localStorage.setItem('isStaff', res.data.Staff ? "True" : '');
         localStorage.setItem('name', formData.username);
+        localStorage.setItem('id', res.data.id);
         history.push('../login');
         history.replace('../');
         props.refresh();

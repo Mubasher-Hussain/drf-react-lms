@@ -97,7 +97,7 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class RequestList(generics.ListCreateAPIView):
-    queryset = Request.objects.all().order_by('reader')
+    queryset = Request.objects.all().order_by('-status')
     serializer_class = RequestSerializer
     permission_classes = [IsUniqueOrStaffOnly]
     def get_queryset(self):
@@ -108,7 +108,7 @@ class RequestList(generics.ListCreateAPIView):
             except Request.DoesNotExist:
                 print('Reader not found')
         else:
-            return Request.objects.all().order_by('reader')
+            return Request.objects.all().order_by('-status')
     def perform_create(self, serializer):
         serializer.save(reader=self.request.user)
 
@@ -175,9 +175,9 @@ def login_request(request):
         if user is not None:
             login(request, user)
             if user.is_staff:
-                return JsonResponse({'Staff': 'Logged In'})
+                return JsonResponse({'Staff': 'Logged In', 'id': user.id})
             else:
-                return JsonResponse({'User': 'Logged In'})
+                return JsonResponse({'User': 'Logged In', 'id': user.id})
         else:
             return JsonResponse({'error': "Invalid username or password."})       
 

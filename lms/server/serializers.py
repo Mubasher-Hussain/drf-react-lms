@@ -14,6 +14,12 @@ class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
         fields = ('id', 'reader', 'book', 'issue_date', 'return_date', 'fine')
+    
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['book'] = BooksSerializer(instance.book).data
+        return response
 
 
 class RequestSerializer(serializers.ModelSerializer):
@@ -21,9 +27,15 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = ('id', 'reader', 'book', 'status')
+    
+        
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['book'] = BooksSerializer(instance.book).data
+        return response
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'id')
+        fields = ('username', 'email', 'id', 'date_joined')
