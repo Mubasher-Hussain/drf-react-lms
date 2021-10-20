@@ -17,10 +17,14 @@ class Request(models.Model):
     reader = models.ForeignKey(User, to_field='username', null=False, on_delete=models.DO_NOTHING)
     book = models.ForeignKey(Book, to_field='title', null=False, on_delete=models.DO_NOTHING)
     status = models.CharField(max_length=100, default='pending')
-
+    issue_period_weeks = models.IntegerField(default=1)
+    
+    
 class Record(models.Model):
     reader = models.ForeignKey(User, to_field='username', null=False, on_delete=models.DO_NOTHING)
     book = models.ForeignKey(Book, to_field='title', null=False, on_delete=models.DO_NOTHING)
-    issue_date = models.DateTimeField()
+    issue_date = models.DateTimeField(auto_now_add=True)
     return_date = models.DateTimeField(null=True)
     fine = models.IntegerField(null=True)
+    issue_period_weeks = models.IntegerField(default=1)
+    

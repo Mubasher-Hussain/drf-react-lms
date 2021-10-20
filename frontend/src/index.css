@@ -25,4 +25,17 @@ body,
 .bookList{
   max-height: 80%;
   width: 1366px;
+  overflow: auto;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1224px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+  text-align: left;
 }

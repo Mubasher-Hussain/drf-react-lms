@@ -15,10 +15,12 @@ export function Analysis(props) {
   const history = useHistory();
   const location = useLocation();
   const baseURL = 'server/api/records';
-  const baseURL2 = 'server/api/analysis/books-issued'
+  const baseURL2 = 'server/api/analysis/books-issued';
+  const baseURL3 = 'server/api/analysis/stats'
   const status = props.match.params.status;
   let url2 = `server/api/analysis/${reader}/books-issued`;
   let url = `server/api/${reader}/records`;
+  let url3 = `server/api/analysis/${reader}/stats`;
   let graphData = {};
 
   function displayGraph1(){
@@ -78,18 +80,71 @@ export function Analysis(props) {
     }
   }
 
+
+  function displayStats(){
+    if(recordsList && recordsList.stats)
+    return (
+      <div class="row">
+        {recordsList.stats.books &&
+        <div class="col-sm-6 col-md-3 col-6">
+          <div class="info-box">
+            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-book"></i></span>
+            <div>
+              <span>Total Books: </span>
+              <span>{recordsList.stats.books}</span>
+            </div>
+          </div>
+        </div>
+        }
+        <div class="col-sm-6 col-md-3 col-6">
+          <div class="info-box mb-3">
+            <span class="info-box-icon bg-danger elevation-1"><i class="far fa-money-bill-alt"></i></span>
+            <div >
+              <span>Total Fine Imposed: </span>
+              <span>{recordsList.stats.fine}</span>
+            </div>
+          </div>
+        </div>            
+        <div class="clearfix hidden-md-up"></div>
+          <div class="col-sm-6 col-md-3 col-6">
+            <div class="info-box mb-3">
+              <span class="info-box-icon bg-success elevation-1"><i class="fas fa-shopping-cart"></i></span>
+              <div>
+                <NavLink to = '/recordsList'>
+                <span>Books Currently Issued: </span></NavLink>
+                <span>{recordsList.stats.issue}</span>
+              </div>
+            </div>
+          </div>
+          {recordsList.stats.books &&
+          <div class="col-sm-6 col-md-3 col-6">
+            <div class="info-box mb-3">
+            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
+            <div>
+              <NavLink to="/usersList"><span>Normal Users: </span></NavLink>
+              <span>{recordsList.stats.user}</span>
+            </div>
+          </div>
+        </div>
+          }
+      </div>
+    );
+  }
+
+
   useEffect(async() => {
     if (!reader || reader=='All'){
       url = baseURL;
       url2 = baseURL2;
+      url3 = baseURL3;
     }
     if (status){
       url += `/${status}`
     }
     const recordsData = await axios(url);
     const bookGraph = await axios(url2);
-    
-    setGraphDetails({ records: recordsData.data, bookGraph: bookGraph.data})
+    const stats = await axios(url3);
+    setGraphDetails({ records: recordsData.data, bookGraph: bookGraph.data, stats:stats.data})
   
   }, [reader, status])
   
@@ -97,6 +152,9 @@ export function Analysis(props) {
     <div class='bookList'>
       <h1>{reader} Analysis</h1>
       <hr/>
+      <div class = 'container'>
+        {displayStats()}
+      </div>
         <div class='container' id='graph1'>
         </div>
         <div class='container' id='graph2'>

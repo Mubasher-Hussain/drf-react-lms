@@ -31,7 +31,7 @@ export function BooksList({match}) {
   function search (item) {
     var titles = document.getElementsByClassName("title");
     for (var i=0 ; i<titles.length ;  i++){
-      if (!titles[i].textContent.match(item)){
+      if (!titles[i].textContent.toUpperCase().match(item.toUpperCase())){
         titles[i].parentElement.style.display = "none"
       }
       else

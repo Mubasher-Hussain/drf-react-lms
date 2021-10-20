@@ -74,7 +74,7 @@ export function Sidebar (props) {
             
             <NavLink exact to="/recordsList" activeClassName="activeClicked">
               {isStaff &&
-                <CDBSidebarMenuItem icon="table">Issue Records</CDBSidebarMenuItem>
+                <CDBSidebarMenuItem icon="table">Issued Records</CDBSidebarMenuItem>
               }
             </NavLink>
 

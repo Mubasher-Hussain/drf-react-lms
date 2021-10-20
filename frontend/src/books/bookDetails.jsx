@@ -38,60 +38,71 @@ export function BookDetails(props) {
     if (bookDetails && bookDetails.book){
       return (
         <div>
-          <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
-            <h1>{bookDetails.book.title}</h1>
-            <div>
-              <img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
+          <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px', padding:'5px'}}>
+            <div class="content">
+              <figure class="t-cover">
+                <img style={{width: 300, height: 340}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
+              </figure>
+              <div class="metadata" style={{'marginLeft': '30px'}}>
+                <h1 class="t-title">{bookDetails.book.title}</h1>
+                <hr/>
+                <div class="t-authors">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></div>
+                <div class="t-release-date">Published On :{bookDetails.book.published_on}</div>
+                <div id="titlePromo">
+                  <hr/>
+                  <hr/>
+                  <p style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
+                  <hr/>
+                </div>
+
+                <div class="controls">
+                  {localStorage.getItem('isStaff') && (
+                    <p>
+                      <button className='btn' onClick={() => 
+                        history.push({pathname: `/editBook/${pk}`,
+                                      query: {title: bookDetails.book.title,
+                                              summary: bookDetails.book.summary,
+                                              author: bookDetails.book.author,
+                                              published_on: bookDetails.book.published_on}
+                                    })
+                                      }>
+                        Edit
+                      </button>
+                      <button type="button" className="btn" onClick={deleteBook}>
+                      Delete
+                      </button>
+                    </p>
+                  )}
+                  {logged && !localStorage.getItem('isStaff') && (
+                    <p>
+                      <button
+                        className='btn'
+                        onClick={() =>{
+                          axios
+                          .post('server/api/requests/create', {'book': bookDetails.book.title, 'issue_period_weeks':document.getElementById("issue-period").value})
+                          .then(res => {
+                            props.createNotification(`Issue Request for book ${bookDetails.book.title} Created`, 'success');
+                            history.goBack(); 
+                          })
+                          .catch((error) => {
+                            props.createNotification(error.message+'. You already have a pending request', 'error')
+                          })
+                          }
+                        }
+                      >
+                        Issue Request
+                      </button>
+                      <select class="form-select" id="issue-period" aria-label="Default select example">
+                        <option value="1" selected>1 Week</option>
+                        <option value="2">2 Week</option>
+                        <option value="4">4 Month</option>
+                      </select>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-            <hr/>
-            <p style={{minHeight: '100px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
-            <hr/>
-            <div style={{textAlign: "left"}}>
-              <span class="badge" tyle={{float: 'left'}}>Published: {bookDetails.book.published_on}</span>
-              <div class="pull-right">
-                <span class="label label-default">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></span>
-              </div>         
-            </div>    
-            <hr/>
-          </div>  
-          {localStorage.getItem('isStaff') && (
-            <p>
-              <button className='btn' onClick={() => 
-                history.push({pathname: `/editBook/${pk}`,
-                              query: {title: bookDetails.book.title,
-                                      summary: bookDetails.book.summary,
-                                      author: bookDetails.book.author,
-                                      published_on: bookDetails.book.published_on}
-                             })
-                              }>
-                Edit
-              </button>
-              <button type="button" className="btn" onClick={deleteBook}>
-              Delete
-              </button>
-            </p>
-          )}
-          {logged && !localStorage.getItem('isStaff') && (
-            <p>
-              <button
-                className='btn'
-                onClick={() => 
-                  axios
-                  .post('server/api/requests/create', {'book': bookDetails.book.title})
-                  .then(res => {
-                    props.createNotification(`Issue Request for book ${bookDetails.book.title} Created`, 'success');
-                    history.goBack(); 
-                  })
-                  .catch((error) => {
-                    props.createNotification(error.message, 'error')
-                  })
-                }
-              >
-                Issue Request
-              </button>
-            </p>
-          )}
-                  
+          </div>     
         </div>
       )
     }
@@ -103,6 +114,7 @@ export function BookDetails(props) {
       <div class='container'>
         { displayDetail()}
       </div>
+      
     </div>
   )
 }

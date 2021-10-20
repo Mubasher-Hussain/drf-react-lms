@@ -20,7 +20,7 @@ export function UsersList() {
             <td>{user.id}</td>
             <td className='title'><NavLink to={'/userDetails/' + user.id} >{user.username}</NavLink></td>
             <td>{user.email}</td>
-            <td>{user.date_joined}</td>
+            <td>{new Date(user.date_joined).toString()}</td>
             <td>
               <span class="badge"><NavLink to={'/analysis/' + user.username} >Analysis</NavLink></span>
               <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
@@ -32,13 +32,13 @@ export function UsersList() {
   }
 
   function search (item) {
-    var users = document.getElementsByTagName("h2");
+    var users = document.getElementsByClassName("title");
     for (var i=0 ; i<users.length ;  i++){
-      if (!users[i].textContent.match(item)){
+      if (!users[i].textContent.toUpperCase().match(item.toUpperCase())){
         users[i].parentElement.style.display = "none"
       }
       else
-        users[i].parentElement.style.display = "block"  
+        users[i].parentElement.style.display = ""  
     }
   }
   

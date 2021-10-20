@@ -58,12 +58,12 @@ class RecordList(generics.ListCreateAPIView):
         if self.kwargs:
             try:
                 reader = self.kwargs['reader']
-                return Record.objects.filter(reader=reader).order_by('reader')
+                return Record.objects.filter(reader=reader).order_by('return_date')
             except Record.DoesNotExist:
                 print('Record not found')
         else:
-            return Record.objects.all().order_by('reader')
-    
+            return Record.objects.all().order_by('return_date')
+
     def perform_create(self, serializer):
         """When issue request is accepted, new record is created"""
         serializer.save()
@@ -91,7 +91,9 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
             aware_date = datetime.datetime.fromisoformat(self.request.data['return_date'])
         issue_period = ((aware_date - record.issue_date).total_seconds() // 86400)
         fine = 0
-        if issue_period >= 7:
+        request_period = record.issue_period_weeks  if record.issue_period_weeks else 1
+        request_period *= 7
+        if issue_period >= request_period:
             fine = (issue_period - 6) * 100
         serializer.save(fine=fine)
 
@@ -151,6 +153,19 @@ def book_graph(request, reader=None):
         data = Record.objects.values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
     for obj in list(data):
         output[obj['book']] = obj['books_issued']
+    return JsonResponse(output)
+
+
+def stats(request, reader=None):    
+    output = {}
+    if reader:
+        output['issue'] = Record.objects.filter(reader=reader, return_date= None).count()
+        output['fine'] = Record.objects.filter(reader=reader).aggregate(Sum('fine'))['fine__sum']
+    else:
+        output['books'] = Book.objects.all().count()
+        output['user'] = User.objects.filter(is_staff=False).count()
+        output['issue'] = Record.objects.filter(return_date= None).count()
+        output['fine'] = Record.objects.aggregate(Sum('fine'))['fine__sum']
     return JsonResponse(output)
 
 

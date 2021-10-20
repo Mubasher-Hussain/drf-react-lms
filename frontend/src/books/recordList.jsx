@@ -18,36 +18,36 @@ export function RecordsList(props) {
   const status = props.match.params.status;
   let url = `server/api/${reader}/records`;
   
-  function displayList(){
-      
-    if (recordsList && recordsList.length){
-      return recordsList.map((record)=>{
-        return(         
-          <div class="col-md-12">
-            <p style={{ textAlign: 'left' }}>Reader: <NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></p>
-            <p style={{ textAlign: 'left' }}>Book: {record.book.title}</p>
-            <p style={{ textAlign: 'left' }}>Fine: {record.fine}</p>
-            <div style={{textAlign: "left"}}>
-              <span class="badge" tyle={{float: 'left'}}>Issue Date: {record.issue_date}</span>
-              <div class="pull-right">
-                <span class="label label-default">Return Date: {record.return_date ? record.return_date : 'Not Returned'}</span>
-              </div>         
-            </div>
-            <hr/>
-          </div>            
-        )
-    })}
-  }
-
   function displayList(filter){     
     if (recordsList && recordsList.length){
       return recordsList.map((record)=>{
+        var deadline_issue = new Date(record.issue_date)
+        var classVar = "";
+        deadline_issue.setDate(deadline_issue.getDate() + record.issue_period_weeks * 7)
+        deadline_issue = deadline_issue.toString()
+        
+        if(!localStorage.getItem('isStaff')){
+          if (new Date() > new Date(deadline_issue)){
+            props.createNotification(`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning');
+            classVar = "text-danger";
+          }
+          else if (new Date(deadline_issue).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
+            props.createNotification(`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning');
+            classVar = "text-warning";
+          }
+          if (record.fine > 0){
+            props.createNotification(`You have pending fine for late returning "${record.book.title}". Please pay it`, 'warning');
+            classVar = "bg-warning";  
+          }
+        }
+
         return(         
-          <tr>
+          <tr class={classVar}>
             <td><NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></td>
             <td className='title'>{record.book.title}</td>
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ record.book.cover } /></td>
             <td>{new Date(record.issue_date).toString()}</td>
+            <td>{deadline_issue}</td>
             {record.return_date &&
               <td>{new Date(record.return_date).toString()}</td>
             }
@@ -108,7 +108,7 @@ export function RecordsList(props) {
       setRecordsList(res.data);
     })
     .catch( (error) => props.createNotification(error.message, 'error'))
-  }, [reader, status])
+  }, [reader])
   
   return (
     <div class='bookList'>
@@ -121,7 +121,8 @@ export function RecordsList(props) {
               <th>Book Title</th>
               <th>Book Cover</th>
               <th>Issue Date</th>
-              <th>Return Date</th>
+              <th>Deadline</th>
+              <th>Returned Date</th>
               <th>Fine</th>
               <th>Action</th>
             </tr>

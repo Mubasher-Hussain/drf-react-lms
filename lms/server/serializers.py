@@ -13,8 +13,7 @@ class RecordSerializer(serializers.ModelSerializer):
     fine = serializers.ReadOnlyField()
     class Meta:
         model = Record
-        fields = ('id', 'reader', 'book', 'issue_date', 'return_date', 'fine')
-    
+        fields = ('id', 'reader', 'book', 'issue_date', 'return_date', 'fine', 'issue_period_weeks')
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
@@ -26,8 +25,7 @@ class RequestSerializer(serializers.ModelSerializer):
     reader = serializers.ReadOnlyField(source='reader.username')
     class Meta:
         model = Request
-        fields = ('id', 'reader', 'book', 'status')
-    
+        fields = ('id', 'reader', 'book', 'status', 'issue_period_weeks')
         
     def to_representation(self, instance):
         response = super().to_representation(instance)

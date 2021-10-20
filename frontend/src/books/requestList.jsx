@@ -26,6 +26,7 @@ export function RequestsList(props) {
             <td><NavLink to={'/requestsList/' + request.reader} >{request.reader}</NavLink></td>
             <td className='title'>{request.book.title}</td>
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ request.book.cover } /></td>
+            <td >{request.issue_period_weeks} week</td>
             <td>{request.status}</td>
             {localStorage.getItem('isStaff') && (request.status=='pending') && (
             <td>
@@ -34,9 +35,9 @@ export function RequestsList(props) {
                   className='btn'
                   onClick={() => 
                     axios
-                    .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book})
+                    .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book.title, 'issue_period_weeks': request.issue_period_weeks})
                     .then(res => {
-                      props.createNotification(`Book '${request.book}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success');
+                      props.createNotification(`Book '${request.book.title}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success');
                       history.push('/');
                       history.goBack(); 
                     })
@@ -123,6 +124,7 @@ export function RequestsList(props) {
               <th>Reader</th>
               <th>Book Title</th>
               <th>Book Cover</th>
+              <th>Requested Issue Period</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>

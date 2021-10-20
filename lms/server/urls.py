@@ -38,7 +38,9 @@ urlpatterns = [
     path('api/<str:reader>/records', views.RecordList.as_view(), name="check_record"),
     path('api/<str:reader>/records/<str:status>', views.RecordList.as_view(), name="check_pending_record"),
     path('api/analysis/books-issued', views.book_graph, name='graph_book'),
+    path('api/analysis/stats', views.stats, name='stats'),
     path('api/analysis/<str:reader>/books-issued', views.book_graph, name='graph_book'),
+    path('api/analysis/<str:reader>/stats', views.stats, name='stats_reader'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
