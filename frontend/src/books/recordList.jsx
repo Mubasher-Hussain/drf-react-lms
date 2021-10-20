@@ -27,11 +27,11 @@ export function RecordsList(props) {
         deadline_issue = deadline_issue.toString()
         
         if(!localStorage.getItem('isStaff')){
-          if (new Date() > new Date(deadline_issue)){
+          if (new Date() > new Date(deadline_issue) && !record.return_date){
             props.createNotification(`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning');
             classVar = "text-danger";
           }
-          else if (new Date(deadline_issue).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
+          else if (new Date(deadline_issue).setHours(0,0,0,0) == new Date().setHours(0,0,0,0) && !record.return_date){
             props.createNotification(`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning');
             classVar = "text-warning";
           }
