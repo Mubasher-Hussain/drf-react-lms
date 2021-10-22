@@ -194,7 +194,7 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(id=1, username='mhussain', email='a@c.com', password='123')
         self.client.login(username='mhussain', password='123')
         book = Book.objects.create(id=123, title='book1', summary='summary123')
-        Record.objects.create(book=book, reader=auth.get_user(self.client), fine=100)
+        Record.objects.create(book=book, reader=auth.get_user(self.client), fine=100, fine_status='pending')
         Record.objects.create(book=book, reader=auth.get_user(self.client), fine=200)
                 
         staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
@@ -202,8 +202,7 @@ class ViewsTest(TestCase):
 
         # Staff accessing user info
         response = self.client.get('/server/api/user/1')
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['fine'], 300)
+        self.assertEqual(response.json()['fine'], 100)
         self.assertTrue(response.json()['user']['email'])
         self.assertTrue(response.json()['user']['username'])
