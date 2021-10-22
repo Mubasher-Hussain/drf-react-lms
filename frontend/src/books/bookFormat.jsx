@@ -12,6 +12,8 @@ export class BookFormat extends React.Component{
         summary: '',
         author: '',
         published_on: '',
+        category: '',
+        quantity: 0,
       },
     };  
   }
@@ -68,6 +70,29 @@ export class BookFormat extends React.Component{
             name="author"
             placeholder="Author"
             value={this.state.bookData.author}
+            onChange={this.handleInputChange.bind(this)}
+            style={{fontSize: '16px'}}
+          />
+        </div>
+        <div class="form-group" >
+          <label style= {{float: 'left'}} htmlFor="category">Category</label>
+          <input type="text"
+            class="form-control"
+            name="category"
+            placeholder="Category"
+            value={this.state.bookData.category}
+            onChange={this.handleInputChange.bind(this)}
+            style={{fontSize: '16px'}}
+          />
+        </div>
+        <div class="form-group" >
+          <label style= {{float: 'left'}} htmlFor="quantity">Quantity</label>
+          <input type="number"
+            step="1"
+            class="form-control"
+            name="quantity"
+            placeholder="Quantity"
+            value={this.state.bookData.quantity}
             onChange={this.handleInputChange.bind(this)}
             style={{fontSize: '16px'}}
           />

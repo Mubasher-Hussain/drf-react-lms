@@ -14,9 +14,9 @@ export function RecordsList(props) {
   const [recordsList, setRecordsList] = useState();
   const history = useHistory();
   const location = useLocation();
-  const baseURL = 'server/api/records';
+  const baseURL = '../server/api/records';
   const status = props.match.params.status;
-  let url = `server/api/${reader}/records`;
+  let url = `../server/api/${reader}/records`;
   
   function displayList(filter){     
     if (recordsList && recordsList.length){
@@ -26,7 +26,7 @@ export function RecordsList(props) {
         deadline_issue.setDate(deadline_issue.getDate() + record.issue_period_weeks * 7)
         deadline_issue = deadline_issue.toString()
         
-        if(!localStorage.getItem('isStaff')){
+        if(!localStorage.getItem('isStaff') && localStorage.getItem('name')){
           if (new Date() > new Date(deadline_issue) && !record.return_date){
             props.createNotification(`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning');
             classVar = "text-danger";
@@ -35,8 +35,8 @@ export function RecordsList(props) {
             props.createNotification(`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning');
             classVar = "text-warning";
           }
-          if (record.fine > 0){
-            props.createNotification(`You have pending fine for late returning "${record.book.title}". Please pay it`, 'warning');
+          if (record.fine > 0 && record.fine_status != 'paid'){
+            props.createNotification(`You have pending fine for late returning "${record.book.title}". Please pay it`, 'error');
             classVar = "bg-warning";  
           }
         }
@@ -55,10 +55,16 @@ export function RecordsList(props) {
               <td>Not Returned</td>
             }
             <td>{record.fine}</td>
+            {record.fine>0 &&
+              <td>{record.fine_status}</td>
+            }
+            {!record.fine &&
+              <td>None</td>
+            }
             {localStorage.getItem('isStaff') && !record.return_date && (
             <p>
               <button
-                className='btn'
+                class="btn btn-rounded btn-brown"
                 onClick={() => {
                   var date =new Date();
                   date = date.toLocaleString('en-US', {timeZone : 'Asia/Karachi'});
@@ -77,7 +83,31 @@ export function RecordsList(props) {
                   })
                 }}
               >
+                <i class="fas fa-redo pr-2" aria-hidden="true"></i>
                 Return Book
+              </button>
+            </p>
+            )}
+            {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status=='pending' && (
+            <p>
+              <button
+                className='btn'
+                onClick={() => {
+                  axios
+                  .patch(`server/api/record/${record.id}/pay-fine`,
+                    {'fine_status': 'paid'},
+                    )
+                  .then(res => {
+                    props.createNotification(`Fine for Book '${record.book.title}' Successfully Paid For User '${record.reader}'.`, 'success');
+                    history.push('/');
+                    history.goBack(); 
+                  })
+                  .catch((error) => {
+                    props.createNotification(error.message, 'error')
+                  })
+                }}
+              >
+                Pay Fine
               </button>
             </p>
             )}
@@ -124,6 +154,7 @@ export function RecordsList(props) {
               <th>Deadline</th>
               <th>Returned Date</th>
               <th>Fine</th>
+              <th>Fine Status</th>
               <th>Action</th>
             </tr>
           </thead>

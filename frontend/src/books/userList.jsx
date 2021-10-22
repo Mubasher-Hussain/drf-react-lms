@@ -10,7 +10,7 @@ import Table from "react-bootstrap/Table";
 // Displays All Users or specific by author
 export function UsersList() {
   const [usersList, setUsersList] = useState();
-  const url = 'server/api/users';
+  const url = '../server/api/users';
 
   function displayList(filter){     
     if (usersList && usersList.length){
@@ -53,11 +53,11 @@ export function UsersList() {
   
   return (
     <div class='bookList'>
+      <h1>Users List</h1>
       <SearchField 
         placeholder='Search By Username'
         onChange={search}
       />
-      <h1>Users List</h1>
       <hr/>
         <Table striped bordered hover>
           <thead>

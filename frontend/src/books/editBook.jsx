@@ -13,10 +13,13 @@ export  function EditBook (props){
   const history = useHistory();
   function handleClick (bookData) {
     let form_data = new FormData();
-    form_data.append('cover', bookData.cover, bookData.cover.name);
+    if (bookData && typeof(bookData.cover) !== 'string')
+      form_data.append('cover', bookData.cover, bookData.cover.name);
     form_data.append('title', bookData.title);
     form_data.append('summary', bookData.summary);
     form_data.append('author', bookData.author);
+    form_data.append('category', bookData.category);
+    form_data.append('quantity', bookData.quantity);
     form_data.append('published_on', bookData.published_on);
     axios
     .put(`server/api/book/${pk}/edit`, form_data)

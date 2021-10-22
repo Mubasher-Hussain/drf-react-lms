@@ -134,7 +134,7 @@ class ViewsTest(TestCase):
         
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['reader'], 'mhussain')
-        self.assertEqual(response.json()['book'], 'book1')
+        self.assertEqual(response.json()['book']['title'], 'book1')
         self.assertEqual(response.json()['status'], 'pending')
     
     def test_issue_book(self):
@@ -152,7 +152,7 @@ class ViewsTest(TestCase):
         
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['reader'], 'mhussain')
-        self.assertEqual(response.json()['book'], 'book1')
+        self.assertEqual(response.json()['book']['title'], 'book1')
         self.assertFalse(response.json()['return_date'])
         self.assertEqual(response2.json()['status'], 'accepted')
 
@@ -172,7 +172,7 @@ class ViewsTest(TestCase):
         
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response1.json()['reader'], 'mhussain')
-        self.assertEqual(response1.json()['book'], 'book1')
+        self.assertEqual(response1.json()['book']['title'], 'book1')
         self.assertTrue(response1.json()['return_date'])
         self.assertEqual(response1.json()['fine'], 200)
 

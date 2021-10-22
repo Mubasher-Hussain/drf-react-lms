@@ -18,7 +18,8 @@ export function BookDetails(props) {
     const bookData = await axios(
       `server/api/book/${pk}`
     );
-    
+    if (!localStorage.getItem('isStaff') && bookData.data.quantity==0)
+      props.createNotification('Book is currently unavailable now. You can still request for issue but it will only be accepted when book is available', 'warning')
     setBookDetails({ book: bookData.data})
   
   }, [])
@@ -48,13 +49,20 @@ export function BookDetails(props) {
                 <hr/>
                 <div class="t-authors">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></div>
                 <div class="t-release-date">Published On :{bookDetails.book.published_on}</div>
+                <div >Quantity :{bookDetails.book.quantity}</div>
                 <div id="titlePromo">
                   <hr/>
                   <hr/>
                   <p style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
                   <hr/>
                 </div>
-
+                <div class="t-release-date">
+                  Category :
+                  <NavLink to={`/booksList/All/${bookDetails.book.category}`}>
+                    {bookDetails.book.category}
+                  </NavLink>
+                </div>
+                <hr />
                 <div class="controls">
                   {localStorage.getItem('isStaff') && (
                     <p>
@@ -63,7 +71,10 @@ export function BookDetails(props) {
                                       query: {title: bookDetails.book.title,
                                               summary: bookDetails.book.summary,
                                               author: bookDetails.book.author,
-                                              published_on: bookDetails.book.published_on}
+                                              cover: bookDetails.book.cover,
+                                              published_on: bookDetails.book.published_on,
+                                              category: bookDetails.book.category,
+                                              quantity: bookDetails.book.quantity}
                                     })
                                       }>
                         Edit

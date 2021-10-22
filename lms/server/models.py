@@ -8,7 +8,8 @@ class Book(models.Model):
     summary = models.CharField(max_length=5000, null=False)
     author = models.CharField(max_length=100, null=False)
     published_on = models.DateField(null=True)
-
+    category = models.CharField(max_length=100, default='Unassigned', null=False)
+    quantity = models.IntegerField(default=1)
     def __str__(self):
         return self.title
 
@@ -27,4 +28,5 @@ class Record(models.Model):
     return_date = models.DateTimeField(null=True)
     fine = models.IntegerField(null=True)
     issue_period_weeks = models.IntegerField(default=1)
+    fine_status = models.CharField(max_length=100, default='none')
     

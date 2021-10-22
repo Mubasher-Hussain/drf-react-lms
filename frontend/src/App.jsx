@@ -8,12 +8,10 @@ import {
   useHistory,
 } from "react-router-dom";
 
-import axios from "./auth/axiosConfig";
 
 import "./App.scss";
 import { Login, Register } from "./login/index";
-import { logout, useAuth } from "./auth";
-import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
+import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
 
 import NotificationSystem from 'react-notification-system';
  
@@ -70,7 +68,8 @@ class App extends React.Component {
           <Sidebar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
           <Switch>
             <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
-            <Route exact path="/booksList/:author?" component={BooksList}/>
+            <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
+            <Route exact path="/home" component={Home}/>
             <Route exact path="/usersList" component={UsersList}/>
             <Route
               exact path="/requestsList/:reader?/:status?"
@@ -120,7 +119,7 @@ class App extends React.Component {
                     />
                   )}
                   {!isLogginActive && (
-                    <Register containerRef={ref => (this.current = ref)} createNotification={this.createNotification} />
+                    <Register containerRef={ref => (this.current = ref)} createNotification={this.createNotification} changeState={this.changeState.bind(this)} />
                   )}
                 </div>
                 <RightSide

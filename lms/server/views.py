@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from server.models import Book, Record, Request
-from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly
+from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer
 
 # Serve Single Page Application
@@ -34,8 +34,7 @@ class BooksList(generics.ListCreateAPIView):
         """For displaying author specific posts if author is specified in url"""
         if self.kwargs:
             try:
-                author = self.kwargs['author']
-                return Book.objects.filter(author=author).order_by('title')
+                return Book.objects.filter(**self.kwargs).order_by('title')
             except Book.DoesNotExist:
                 print('Author not found')
         else:
@@ -50,7 +49,7 @@ class BooksDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class RecordList(generics.ListCreateAPIView):
-    permission_classes = [IsStaffOrReaderOnly]
+    permission_classes = [IsStaffOrReaderOnly, IsBookAvailable]
     queryset = Record.objects.all().order_by('reader')
     serializer_class = RecordSerializer
     def get_queryset(self):
@@ -67,6 +66,9 @@ class RecordList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         """When issue request is accepted, new record is created"""
         serializer.save()
+        book = Book.objects.get(title=self.request.data['book'])
+        book.quantity -= 1
+        book.save()
         request = Request.objects.get(
             book=self.request.data['book'], 
             reader=self.request.data['reader'],
@@ -83,19 +85,28 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         """When book is returned, calculates fine if returned late more than 7 days"""
-        record = self.get_object()
-        if self.request.data['return_date'].endswith('Z'):
-            return_date = datetime.datetime.fromisoformat(self.request.data['return_date'][:-1])
-            aware_date = pytz.timezone('Asia/Karachi').localize(return_date)
+        if 'return_date' in self.request.data :
+            record = self.get_object()
+            book = Book.objects.get(title=record.book)
+            book.quantity += 1
+            book.save()
+            fine_status = 'none'
+            if self.request.data['return_date'].endswith('Z'):
+                return_date = datetime.datetime.fromisoformat(self.request.data['return_date'][:-1])
+                aware_date = pytz.timezone('Asia/Karachi').localize(return_date)
+            else:
+                aware_date = datetime.datetime.fromisoformat(self.request.data['return_date'])
+            issue_period = ((aware_date - record.issue_date).total_seconds() // 86400)
+            fine = 0
+            request_period = record.issue_period_weeks  if record.issue_period_weeks else 1
+            request_period *= 7
+            if issue_period >= request_period:
+                fine = (issue_period - 6) * 100
+            if fine>0 :
+                fine_status = 'pending'
+            serializer.save(fine=fine, fine_status=fine_status)
         else:
-            aware_date = datetime.datetime.fromisoformat(self.request.data['return_date'])
-        issue_period = ((aware_date - record.issue_date).total_seconds() // 86400)
-        fine = 0
-        request_period = record.issue_period_weeks  if record.issue_period_weeks else 1
-        request_period *= 7
-        if issue_period >= request_period:
-            fine = (issue_period - 6) * 100
-        serializer.save(fine=fine)
+            serializer.save(fine_status='paid')
 
 
 class RequestList(generics.ListCreateAPIView):
@@ -140,9 +151,14 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         user_obj = self.get_object()
         user_serialized = self.serializer_class(user_obj)
         data['user'] = user_serialized.data
-        overdue = user_obj.record_set.aggregate(Sum('fine'))
+        overdue = user_obj.record_set.filter(fine_status='pending').aggregate(Sum('fine'))
         data['fine'] = overdue['fine__sum']
         return Response(data)
+
+
+def get_categories(request):
+    categories = list(Book.objects.all().values_list("category").distinct())
+    return JsonResponse({'categories': categories})
 
 
 def book_graph(request, reader=None):    

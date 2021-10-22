@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from server.models import Book, Record, Request
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -21,6 +22,14 @@ class IsStaffOrReaderOnly(permissions.BasePermission):
             if 'pk' in view.kwargs:
                 return True
         return request.user.is_staff
+
+
+class IsBookAvailable(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            if Book.objects.get(title=request.data['book']).quantity < 1:
+                return False
+        return True
 
 
 class IsUniqueOrStaffOnly(permissions.BasePermission):

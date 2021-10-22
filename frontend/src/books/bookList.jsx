@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 import SearchField from 'react-search-field';
 
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+
 // Displays All Books or specific by author
-export function BooksList({match}) {
-  const author = match.params.author;
+export function BooksList(props) {
+  const author = props.match.params.author;
+  const category = props.match.params.category;
   const [booksList, setBooksList] = useState();
-  const baseURL = 'server/api/books';
-  let url = `server/api/${author}/books`;
-  
+  const baseURL = '../server/api/books';
+  let url = `../server/api/${author}/books`;
+  let categoryUrl = '/booksList';
+  if (author)
+    categoryUrl += '/' + author
+  else
+    categoryUrl += '/' + 'All'
   function displayList(filter){     
     if (booksList && booksList.length){
       return booksList.map((book)=>{
@@ -22,6 +28,8 @@ export function BooksList({match}) {
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ book.cover } /></td>
             <td className='title'><NavLink to={'/bookDetails/' + book.id} >{book.title}</NavLink></td>
             <td><NavLink to={'/booksList/' + book.author} >{book.author}</NavLink></td>
+            <td><NavLink to={`${categoryUrl}/${book.category}`}>{book.category}</NavLink></td>
+            <td >{book.quantity}</td>
             <td >{book.published_on}</td>
           </tr>            
         )
@@ -40,8 +48,11 @@ export function BooksList({match}) {
   }
  
   useEffect(() => {
-    if (!author){
+    if (!author || author=='All'){
       url = baseURL;
+    }
+    if (category){
+      url+='/'+ category
     }
     axios
     .get(url)
@@ -49,16 +60,15 @@ export function BooksList({match}) {
       setBooksList(res.data);
     })
     .catch( (error) => alert(error))  
-  }, [author])
+  }, [author, category])
   
   return (
     <div class='bookList'>
+      <h1>{author} Books List</h1>
       <SearchField 
         placeholder='Search By Book Title'
         onChange={search}
-      />
-      <h1>{author} Books List</h1>
-      <hr/>
+      /><hr/>
         <Table striped bordered hover>
           <thead>
             <tr>
@@ -66,6 +76,8 @@ export function BooksList({match}) {
               <th>Cover</th>
               <th>Title</th>
               <th>Author</th>
+              <th>Category</th>
+              <th>Quantity</th>
               <th>Published Date</th>
             </tr>
           </thead>

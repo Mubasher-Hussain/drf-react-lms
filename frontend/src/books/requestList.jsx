@@ -26,6 +26,7 @@ export function RequestsList(props) {
             <td><NavLink to={'/requestsList/' + request.reader} >{request.reader}</NavLink></td>
             <td className='title'>{request.book.title}</td>
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ request.book.cover } /></td>
+            <td >{request.book.quantity}</td>
             <td >{request.issue_period_weeks} week</td>
             <td>{request.status}</td>
             {localStorage.getItem('isStaff') && (request.status=='pending') && (
@@ -42,7 +43,7 @@ export function RequestsList(props) {
                       history.goBack(); 
                     })
                     .catch((error) => {
-                      props.createNotification(error.message, 'error')
+                      props.createNotification(error.message+'. Book is currently unavailable right now', 'error')
                     })
                   }
                 >
@@ -54,7 +55,7 @@ export function RequestsList(props) {
                   axios
                   .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})
                   .then(res => {
-                    props.createNotification(`Issue Request for book '${request.book}' by User '${request.reader}' Rejected`, 'success');
+                    props.createNotification(`Issue Request for book '${request.book.title}' by User '${request.reader}' Rejected`, 'success');
                     history.push('/')
                     history.goBack(); 
                   })
@@ -72,12 +73,17 @@ export function RequestsList(props) {
     })}
   }
 
-  function fetchRequest(command){
+  function filter(event){
+    let command = event.target.value ;
     if(!status){
-      history.push(`${location.pathname}/${command}`);
+      if (command!='All')
+        history.push(`${location.pathname}/${command}`);
     }
     else if(status!=command){
-      history.push(`./${command}`)
+      if(command!='All')
+        history.push(`./${command}`);
+      else
+        history.push(`../${reader}`);  
     }
   }
 
@@ -99,24 +105,12 @@ export function RequestsList(props) {
   return (
     <div class='bookList'>
       <h1>{reader} Requests List</h1>
-      <button 
-        class="btn"
-        onClick={() => fetchRequest('pending') }
-      >
-        Pending
-      </button>
-      <button 
-        class="btn"
-        onClick={() => fetchRequest('accepted') }
-      >
-        Accepted
-      </button>
-      <button 
-        class="btn"
-        onClick={() => fetchRequest('rejected') }
-      >
-        Rejected
-      </button>
+      <select class="form-select" onChange={filter.bind(this)} id="filter" aria-label="Default select example">
+                        <option value="All" selected>All</option>
+                        <option value="pending">Pending</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
       <hr/>
       <Table striped bordered hover>
           <thead>
@@ -124,6 +118,7 @@ export function RequestsList(props) {
               <th>Reader</th>
               <th>Book Title</th>
               <th>Book Cover</th>
+              <th>Book Qty</th>
               <th>Requested Issue Period</th>
               <th>Status</th>
               <th>Actions</th>

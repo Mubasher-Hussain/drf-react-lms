@@ -118,6 +118,7 @@ export class Register extends React.Component {
           formData={this.state.formData}
           error={this.state.error}
           isFormValid={this.state.isFormValid}
+          changeState={this.props.changeState}
           />
         </div>
       </div>
@@ -152,6 +153,7 @@ function RegisterButton(props) {
       }
       else{
         props.createNotification(res.data.success + '. Now Login', 'success');
+        props.changeState();
         history.push('/');
         history.push('/login');
       }

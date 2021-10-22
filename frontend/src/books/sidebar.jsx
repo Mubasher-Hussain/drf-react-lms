@@ -52,8 +52,8 @@ export function Sidebar (props) {
 
         <CDBSidebarContent className="sidebar-content">
           <CDBSidebarMenu>
-            <NavLink exact to="/" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="columns">Dashboard</CDBSidebarMenuItem>
+            <NavLink exact to="/home" activeClassName="activeClicked">
+              <CDBSidebarMenuItem icon="columns">Home</CDBSidebarMenuItem>
             </NavLink>
 
             <NavLink exact to="/booksList" activeClassName="activeClicked">
@@ -127,16 +127,6 @@ export function Sidebar (props) {
             
           </CDBSidebarMenu>
         </CDBSidebarContent>
-
-        <CDBSidebarFooter style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              padding: '20px 5px',
-            }}
-          >
-            Sidebar Footer
-          </div>
-        </CDBSidebarFooter>
       </CDBSidebar>
     </div>
   );

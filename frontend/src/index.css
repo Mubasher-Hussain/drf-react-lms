@@ -28,6 +28,12 @@ body,
   overflow: auto;
 }
 
+.home{
+  max-height: 100%;
+  width: 1366px;
+  overflow: auto;
+}
+
 .content {
   display: flex;
   flex-direction: row;
@@ -39,3 +45,5 @@ body,
   padding: 0 20px 60px;
   text-align: left;
 }
+
+.carousel .carousel-indicators li {  background-color: gray; }
