@@ -7,15 +7,13 @@ import Carousel from "react-bootstrap/Carousel";
 // Displays All Books or specific by author
 export function Home(props) {
   const [categories, setCategories] = useState();
-  
-  
 
   function displayCategories(){     
     if (categories){
       return categories.map((cat)=>{
         return(
           <div style={{width: '25%', left: '50%', height: '490px', margin:'0 auto', marginBottom:'100px'}} className='border'>
-            <h2>{cat}</h2>  
+            <h2 className='text-warning'>{cat}</h2>  
             <hr/>
             <Item category={cat}/>
           </div>

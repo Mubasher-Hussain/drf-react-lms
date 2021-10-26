@@ -47,24 +47,20 @@ export function RecordsList(props) {
             <td className='title'>{record.book.title}</td>
             <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ record.book.cover } /></td>
             <td>{new Date(record.issue_date).toString()}</td>
-            <td>{deadline_issue}</td>
+            <td className='deadline'>{deadline_issue}</td>
             {record.return_date &&
-              <td>{new Date(record.return_date).toString()}</td>
+              <td className='return'>{new Date(record.return_date).toString()}</td>
             }
             {!record.return_date &&
-              <td>Not Returned</td>
+              <td className='notReturn'>Not Returned</td>
             }
             <td>{record.fine}</td>
-            {record.fine>0 &&
-              <td>{record.fine_status}</td>
-            }
-            {!record.fine &&
-              <td>None</td>
-            }
+            <td className='fine-status'>{record.fine_status}</td>
             {localStorage.getItem('isStaff') && !record.return_date && (
             <p>
               <button
                 class="btn btn-rounded btn-brown"
+                style={{fontSize: '13px'}}
                 onClick={() => {
                   var date =new Date();
                   date = date.toLocaleString('en-US', {timeZone : 'Asia/Karachi'});
@@ -91,7 +87,7 @@ export function RecordsList(props) {
             {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status=='pending' && (
             <p>
               <button
-                className='btn'
+                className='btn far fa-money-bill-alt'
                 onClick={() => {
                   axios
                   .patch(`server/api/record/${record.id}/pay-fine`,
@@ -109,6 +105,7 @@ export function RecordsList(props) {
               >
                 Pay Fine
               </button>
+              
             </p>
             )}
           </tr>            
@@ -116,12 +113,63 @@ export function RecordsList(props) {
     })}
   }
 
-  function fetchRecord(command){
-    if(!status){
-      history.push(`${location.pathname}/${command}`);
+  function filter (event) {
+    let item = event.target.value;
+    if (item=='overdue'){
+      var titles = document.getElementsByClassName("deadline");
+      for (var i=0 ; i<titles.length ;  i++){
+        if (new Date(titles[i].textContent)< new Date() && titles[i].nextSibling.className == 'notReturn'){
+          titles[i].parentElement.style.display = ""
+        }
+        else
+          titles[i].parentElement.style.display = "none"  
+      }
     }
-    else if(status!=command){
-      history.push(`./${command}`)
+    else if (item=='pending'){
+      var titles = document.getElementsByClassName("deadline");
+      for (var i=0 ; i<titles.length ;  i++){
+        if (titles[i].nextSibling.className == 'return'){
+          titles[i].parentElement.style.display = "none"
+        }
+        else
+          titles[i].parentElement.style.display = ""  
+      }
+    }
+    else if (item=='returned'){
+      var titles = document.getElementsByClassName("deadline");
+      for (var i=0 ; i<titles.length ;  i++){
+        if (titles[i].nextSibling.className == 'notReturn'){
+          titles[i].parentElement.style.display = "none"
+        }
+        else
+          titles[i].parentElement.style.display = ""  
+      }  
+    }
+    else if (item=='fine-pending'){
+      var titles = document.getElementsByClassName("fine-status");
+      for (var i=0 ; i<titles.length ;  i++){
+        if (titles[i].textContent != 'pending'){
+          titles[i].parentElement.style.display = "none"
+        }
+        else
+          titles[i].parentElement.style.display = ""  
+      }  
+    }
+    else if (item=='fine-paid'){
+      var titles = document.getElementsByClassName("fine-status");
+      for (var i=0 ; i<titles.length ;  i++){
+        if (titles[i].textContent != 'paid'){
+          titles[i].parentElement.style.display = "none"
+        }
+        else
+          titles[i].parentElement.style.display = ""  
+      } 
+    }
+    else if (item=='All'){
+      var titles = document.getElementsByTagName("tr");
+      for (var i=0 ; i<titles.length ;  i++){
+          titles[i].style.display = ""  
+      } 
     }
   }
 
@@ -143,6 +191,14 @@ export function RecordsList(props) {
   return (
     <div class='bookList'>
       <h1>{reader} Records List</h1>
+      <select class="form-select" onChange={filter.bind(this)} id="filter" aria-label="Default select example">
+        <option value="All" selected>All</option>
+        <option value='fine-pending'>Fine Pending</option>
+        <option value='fine-paid'>Fine Paid</option>
+        <option value='overdue'>Books Overdue</option>
+        <option value='pending'>Books Pending</option>
+        <option value='returned'>Books Returned</option>
+      </select>
       <hr/>
       <Table striped bordered hover>
           <thead>

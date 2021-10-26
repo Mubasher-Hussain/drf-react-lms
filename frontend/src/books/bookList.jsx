@@ -63,7 +63,7 @@ export function BooksList(props) {
   }, [author, category])
   
   return (
-    <div class='bookList'>
+    <div class='bookList '>
       <h1>{author} Books List</h1>
       <SearchField 
         placeholder='Search By Book Title'

@@ -39,13 +39,13 @@ export function BookDetails(props) {
     if (bookDetails && bookDetails.book){
       return (
         <div>
-          <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px', padding:'5px'}}>
+          <div class="col-md-12" style={{ marginBottom:'5px', padding:'5px'}}>
             <div class="content">
               <figure class="t-cover">
-                <img style={{width: 300, height: 340}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
+                <img style={{width: 350, height: 400}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
               </figure>
               <div class="metadata" style={{'marginLeft': '30px'}}>
-                <h1 class="t-title">{bookDetails.book.title}</h1>
+                <h1 class="text-success">{bookDetails.book.title}</h1>
                 <hr/>
                 <div class="t-authors">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></div>
                 <div class="t-release-date">Published On :{bookDetails.book.published_on}</div>
@@ -53,7 +53,7 @@ export function BookDetails(props) {
                 <div id="titlePromo">
                   <hr/>
                   <hr/>
-                  <p style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
+                  <p class='text-warning' style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
                   <hr/>
                 </div>
                 <div class="t-release-date">
@@ -122,7 +122,7 @@ export function BookDetails(props) {
   
   return (
     <div class="bookList">
-      <div class='container'>
+      <div class='container border'>
         { displayDetail()}
       </div>
       

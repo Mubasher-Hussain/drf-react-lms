@@ -106,11 +106,11 @@ export function RequestsList(props) {
     <div class='bookList'>
       <h1>{reader} Requests List</h1>
       <select class="form-select" onChange={filter.bind(this)} id="filter" aria-label="Default select example">
-                        <option value="All" selected>All</option>
-                        <option value="pending">Pending</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="rejected">Rejected</option>
-                      </select>
+        <option value="All" selected>All</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+      </select>
       <hr/>
       <Table striped bordered hover>
           <thead>
