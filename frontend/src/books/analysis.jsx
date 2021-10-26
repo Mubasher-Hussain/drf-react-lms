@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  useHistory,
-  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -12,8 +10,6 @@ import Plotly from 'plotly.js';
 export function Analysis(props) {
   const reader = props.match.params.reader;
   const [recordsList, setGraphDetails] = useState({records: null, bookGraph: null});
-  const history = useHistory();
-  const location = useLocation();
   const baseURL = 'server/api/records';
   const baseURL2 = 'server/api/analysis/books-issued';
   const baseURL3 = 'server/api/analysis/stats'
@@ -30,12 +26,10 @@ export function Analysis(props) {
         let issue_date = new Date(record.issue_date)
         let dateString = issue_date.toString()
         dateString = dateString.substring(0,16)
-        const diffTime = Math.abs(new Date() - issue_date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));   
         if (dateString in graphData)
-        graphData[dateString] += 1
+          graphData[dateString] += 1
         else
-        graphData[dateString] = 1
+          graphData[dateString] = 1
     });
       var data = [
         {
