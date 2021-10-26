@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework_simplejwt import views as jwt_views
 from . import views
 
 from django.shortcuts import render
@@ -23,7 +24,8 @@ urlpatterns = [
     path('api/user/<int:pk>', views.UserDetail.as_view(), name='user_detail'),
     path('api/register/reader/', views.register_reader, name="register"),
     path('api/register/librarian/', views.register_librarian, name="registerlib"),
-    path('api/login/', views.login_request, name="login"),
+    path('api/token/obtain/', views.ObtainTokenPairWithUserType.as_view(), name='token_create'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('api/logout/', views.logout_request, name="logout"),
     path('api/requests', views.RequestList.as_view(), name="request_display"),
     path('api/requests/create', views.RequestList.as_view(), name="create_book"),

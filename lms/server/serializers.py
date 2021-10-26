@@ -1,6 +1,21 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Book, Record, Request
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super(MyTokenObtainPairSerializer, self).validate(attrs)
+        data.update({'User': 'staff' if self.user.is_staff else 'reader'})
+        data.update({'id': self.user.id})
+        return data
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+        token['User'] = 'staff' if user.is_staff else 'reader'
+        return token
 
 
 class BooksSerializer(serializers.ModelSerializer):
