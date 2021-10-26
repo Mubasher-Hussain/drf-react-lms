@@ -21,13 +21,16 @@ export function Sidebar (props) {
   
   function serverLogout() {
     axios
-    .get('server/api/logout')
+    .post('server/api/logout/', {"refresh_token": localStorage.getItem("refresh_token")})
     .then(() =>{
       logout();
       props.createNotification('Logged Out', 'success');
       localStorage.setItem('isStaff', '');
       localStorage.setItem('name', '')
       localStorage.setItem('id', '')
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("refresh_token")
+      axios.defaults.headers['Authorization'] = null;
       props.refresh();
       history.push('/login');
       history.replace('/');
