@@ -69,23 +69,23 @@ function LoginButton(props) {
   function handleClick() {
     let formData = props.formData;
     axios
-    .post('server/api/login/', formData)
+    .post('server/api/token/obtain/', formData)
     .then(res => {
-      if (!res.data.error){
-        login(res);
-        props.createNotification("Successfully logged in", 'success');
-        localStorage.setItem('isStaff', res.data.Staff ? "True" : '');
-        localStorage.setItem('name', formData.username);
-        localStorage.setItem('id', res.data.id);
-        history.push('../login');
-        history.replace('../');
-        props.refresh();
-      }
-      else{
-        props.createNotification("Incorrect Username or password", 'error');
-      }
+      login(res);
+      props.createNotification("Successfully logged in", 'success');
+      localStorage.setItem('isStaff', res.data.User=='staff' ? "True" : '');
+      localStorage.setItem('name', formData.username);
+      localStorage.setItem('id', res.data.id);
+      localStorage.setItem('access_token', res.data.access);
+      localStorage.setItem('refresh_token', res.data.refresh);
+      axios.defaults.headers['Authorization'] = "JWT " + res.data.access;
+      history.push('../login');
+      history.replace('../');
+      props.refresh();    
     })
-    
+    .catch((error) => {
+      props.createNotification(error.message+'. Incorrect username or password', 'error')
+    })
   }
 
   return (

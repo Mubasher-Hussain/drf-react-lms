@@ -2,7 +2,6 @@ import json, datetime
 
 import pytz
 
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db.models import Sum, Count
 from django.http import JsonResponse
@@ -11,17 +10,24 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 from django.utils import timezone
 
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from server.models import Book, Record, Request
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable
-from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer
+from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
+
+
+class ObtainTokenPairWithUserType(TokenObtainPairView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = MyTokenObtainPairSerializer
 
 
 class BooksList(generics.ListCreateAPIView):
@@ -209,21 +215,10 @@ def register_librarian(request):
             return JsonResponse({'error': "Username or Email already exists"})
 
 
-@ensure_csrf_cookie
-def login_request(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        user = authenticate(username=body['username'], password=body['password'])
-        if user is not None:
-            login(request, user)
-            if user.is_staff:
-                return JsonResponse({'Staff': 'Logged In', 'id': user.id})
-            else:
-                return JsonResponse({'User': 'Logged In', 'id': user.id})
-        else:
-            return JsonResponse({'error': "Invalid username or password."})       
-
-
 def logout_request(request):
-    logout(request)
+    body = json.loads(request.body)
+    refresh_token = body["refresh_token"]
+    token = RefreshToken(refresh_token)
+    if refresh_token:
+        token.blacklist()
     return JsonResponse({'Success': 'Logged Out'})
