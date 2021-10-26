@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import SearchField from 'react-search-field';
 
@@ -48,7 +48,7 @@ export function BooksList(props) {
   }
  
   useEffect(() => {
-    if (!author || author=='All'){
+    if (!author || author==='All'){
       url = baseURL;
     }
     if (category){

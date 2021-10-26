@@ -110,8 +110,16 @@ export function Analysis(props) {
             <div class="info-box mb-3">
               <span class="info-box-icon bg-success elevation-1"><i class="fas fa-shopping-cart"></i></span>
               <div>
+                {localStorage.getItem('isStaff') &&
                 <NavLink to = '/recordsList'>
-                <span>Books Currently Issued: </span></NavLink>
+                  <span>Books Currently Issued: </span>
+                </NavLink>
+                }
+                {!localStorage.getItem('isStaff') &&
+                <NavLink to = {`/recordsList/${localStorage.getItem('name')}`} >
+                  <span>Books Currently Issued: </span>
+                </NavLink>
+                }
                 <span>{recordsList.stats.issue}</span>
               </div>
             </div>

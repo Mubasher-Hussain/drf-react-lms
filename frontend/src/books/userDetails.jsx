@@ -5,14 +5,12 @@ import {
 } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
-import { useAuth } from "../auth"
 
 
 // Display Details of User and its comments
 export function UserDetails(props) {
   const pk = props.match.params.pk;
   const history = useHistory();
-  const [logged] = useAuth();
   const [userDetails, setUserDetails] = useState({ user: null, fine: null});
   useEffect(async() => {
     const userData = await axios(

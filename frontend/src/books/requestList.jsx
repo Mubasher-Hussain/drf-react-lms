@@ -29,7 +29,7 @@ export function RequestsList(props) {
             <td >{request.book.quantity}</td>
             <td >{request.issue_period_weeks} week</td>
             <td>{request.status}</td>
-            {localStorage.getItem('isStaff') && (request.status=='pending') && (
+            {localStorage.getItem('isStaff') && (request.status==='pending') && (
             <td>
               <p>
                 <button
@@ -76,11 +76,11 @@ export function RequestsList(props) {
   function filter(event){
     let command = event.target.value ;
     if(!status){
-      if (command!='All')
+      if (command!=='All')
         history.push(`${location.pathname}/${command}`);
     }
-    else if(status!=command){
-      if(command!='All')
+    else if(status!==command){
+      if(command!=='All')
         history.push(`./${command}`);
       else
         history.push(`../${reader}`);  
@@ -88,7 +88,7 @@ export function RequestsList(props) {
   }
 
   useEffect(() => {
-    if (!reader || reader=='All'){
+    if (!reader || reader==='All'){
       url = baseURL;
     }
     if (status){

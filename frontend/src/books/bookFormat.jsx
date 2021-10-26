@@ -29,7 +29,7 @@ export class BookFormat extends React.Component{
   
   handleInputChange(event) {
     let bookData=this.state.bookData;
-    if(event.target.name == 'cover')
+    if(event.target.name === 'cover')
       bookData[event.target.name] = event.target.files[0];
     else    
       bookData[event.target.name] = event.target.value;

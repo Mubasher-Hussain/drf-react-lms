@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   useHistory,
-  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -13,7 +12,6 @@ export function RecordsList(props) {
   const reader = props.match.params.reader;
   const [recordsList, setRecordsList] = useState();
   const history = useHistory();
-  const location = useLocation();
   const baseURL = '../server/api/records';
   const status = props.match.params.status;
   let url = `../server/api/${reader}/records`;
@@ -31,11 +29,11 @@ export function RecordsList(props) {
             props.createNotification(`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning');
             classVar = "text-danger";
           }
-          else if (new Date(deadline_issue).setHours(0,0,0,0) == new Date().setHours(0,0,0,0) && !record.return_date){
+          else if (new Date(deadline_issue).setHours(0,0,0,0) === new Date().setHours(0,0,0,0) && !record.return_date){
             props.createNotification(`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning');
             classVar = "text-warning";
           }
-          if (record.fine > 0 && record.fine_status != 'paid'){
+          if (record.fine > 0 && record.fine_status !== 'paid'){
             props.createNotification(`You have pending fine for late returning "${record.book.title}". Please pay it`, 'error');
             classVar = "bg-warning";  
           }
@@ -84,7 +82,7 @@ export function RecordsList(props) {
               </button>
             </p>
             )}
-            {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status=='pending' && (
+            {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status==='pending' && (
             <p>
               <button
                 className='btn far fa-money-bill-alt'
@@ -115,58 +113,59 @@ export function RecordsList(props) {
 
   function filter (event) {
     let item = event.target.value;
-    if (item=='overdue'){
-      var titles = document.getElementsByClassName("deadline");
+    var titles;
+    if (item==='overdue'){
+      titles = document.getElementsByClassName("deadline");
       for (var i=0 ; i<titles.length ;  i++){
-        if (new Date(titles[i].textContent)< new Date() && titles[i].nextSibling.className == 'notReturn'){
+        if (new Date(titles[i].textContent)< new Date() && titles[i].nextSibling.className === 'notReturn'){
           titles[i].parentElement.style.display = ""
         }
         else
           titles[i].parentElement.style.display = "none"  
       }
     }
-    else if (item=='pending'){
-      var titles = document.getElementsByClassName("deadline");
+    else if (item==='pending'){
+      titles = document.getElementsByClassName("deadline");
       for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].nextSibling.className == 'return'){
+        if (titles[i].nextSibling.className === 'return'){
           titles[i].parentElement.style.display = "none"
         }
         else
           titles[i].parentElement.style.display = ""  
       }
     }
-    else if (item=='returned'){
-      var titles = document.getElementsByClassName("deadline");
+    else if (item==='returned'){
+      titles = document.getElementsByClassName("deadline");
       for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].nextSibling.className == 'notReturn'){
+        if (titles[i].nextSibling.className === 'notReturn'){
           titles[i].parentElement.style.display = "none"
         }
         else
           titles[i].parentElement.style.display = ""  
       }  
     }
-    else if (item=='fine-pending'){
-      var titles = document.getElementsByClassName("fine-status");
+    else if (item==='fine-pending'){
+      titles = document.getElementsByClassName("fine-status");
       for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].textContent != 'pending'){
+        if (titles[i].textContent !== 'pending'){
           titles[i].parentElement.style.display = "none"
         }
         else
           titles[i].parentElement.style.display = ""  
       }  
     }
-    else if (item=='fine-paid'){
-      var titles = document.getElementsByClassName("fine-status");
+    else if (item==='fine-paid'){
+      titles = document.getElementsByClassName("fine-status");
       for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].textContent != 'paid'){
+        if (titles[i].textContent !== 'paid'){
           titles[i].parentElement.style.display = "none"
         }
         else
           titles[i].parentElement.style.display = ""  
       } 
     }
-    else if (item=='All'){
-      var titles = document.getElementsByTagName("tr");
+    else if (item==='All'){
+      titles = document.getElementsByTagName("tr");
       for (var i=0 ; i<titles.length ;  i++){
           titles[i].style.display = ""  
       } 
@@ -174,7 +173,7 @@ export function RecordsList(props) {
   }
 
   useEffect(() => {
-    if (!reader || reader=='All'){
+    if (!reader || reader==='All'){
       url = baseURL;
     }
     if (status){

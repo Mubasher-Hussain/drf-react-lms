@@ -55,11 +55,14 @@ export class Register extends React.Component {
                 : '';
         break;
 
-        case 'password2':
-          error.conpass = value === formData.password
-                  ? ''
-                  : 'Confirm password does not match password';
-          break;  
+      case 'password2':
+        error.conpass = value === formData.password
+                ? ''
+                : 'Confirm password does not match password';
+        break;
+
+      default:
+        this.props.createNotification(name,'warning');
     }
 
     this.setState({
@@ -75,7 +78,7 @@ export class Register extends React.Component {
         <div className="header">Register</div>
         <div className="content">
           <div className="image">
-            <img src={loginImg} />
+            <img src={loginImg} alt=''/>
           </div>
           <div className="form">
             <div className="form-group">
@@ -141,10 +144,11 @@ function RegisterButton(props) {
     }
     let formData = props.formData;
     delete(formData['password2']);
-    if (type == 'reader')
-      var url = 'reader/';
+    var url ;
+    if (type === 'reader')
+      url = 'reader/';
     else
-      var url = 'librarian/';
+      url = 'librarian/';
     axios
     .post(`server/api/register/${url}`, formData)
     .then(res => {
