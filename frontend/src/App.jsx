@@ -1,4 +1,5 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import {
   BrowserRouter as Router,
   Redirect,
@@ -6,143 +7,108 @@ import {
   Switch,
 } from "react-router-dom";
 
-
+import { createNotification, changeState, setRef } from './reduxStore/appSlice'
 import "./App.scss";
 import { Login, Register } from "./login/index";
 import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
 
 import NotificationSystem from 'react-notification-system';
- 
 
 const notificationSystem = React.createRef()
+  
 
+function App (){
+  const isLogginActive = useSelector((state) => state.app.isLogginActive)
+  const name = useSelector((state) => state.app.name)
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(setRef(notificationSystem))
+  }, [notificationSystem])
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isLogginActive: true,
-      name: '',
-    };
-  }
+  const current = isLogginActive ? "Register" : "Login";
+  const currentActive = isLogginActive ? "login" : "register";
 
-  // Changes state to refresh page in case of changes like login or logout
-  refresh() {
-    this.setState({
-      name: localStorage.getItem('name')
-    });
-  }
-
-  // For animating register and login container via onclick
-  changeState() {
-    const { isLogginActive } = this.state;
-    if (isLogginActive) {
-      this.rightSide.classList.remove("right");
-      this.rightSide.classList.add("left");
-    } else {
-      this.rightSide.classList.remove("left");
-      this.rightSide.classList.add("right");
-    }
-    this.setState(prevState => ({ isLogginActive: !prevState.isLogginActive }));
-  }
-
-  createNotification(message, level, children=null){
-    notificationSystem.current.addNotification({
-      message: message,
-      level: level,
-      children: children
-    });
-  }
-
-  render() {
-    const { isLogginActive } = this.state;
-    const current = isLogginActive ? "Register" : "Login";
-    const currentActive = isLogginActive ? "login" : "register";
-    
-    return (
-      <Router>
-        <div className="App">
-          <NotificationSystem ref={notificationSystem} />
-          <Sidebar createNotification={this.createNotification} refresh={this.refresh.bind(this)}/>
-          <Switch>
-            <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
-            <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
-            <Route exact path="/home" component={Home}/>
-            <Route exact path="/usersList" component={UsersList}/>
-            <Route
-              exact path="/requestsList/:reader?/:status?"
-              children={({match}) => (
-                <RequestsList createNotification={this.createNotification} match={match} />
-              )}
-            />
-            <Route
-              exact path="/recordsList/:reader?/:status?"
-              children={({match}) => (
-                <RecordsList createNotification={this.createNotification} match={match} />
-              )}
-            />
-            <Route
-              exact path="/analysis/:reader?/:status?"
-              children={({match}) => (
-                <Analysis createNotification={this.createNotification} match={match} />
-              )}
-            />
-            <Route
-              exact path="/bookDetails/:pk"
-              children={({match}) => (
-                <BookDetails createNotification={this.createNotification} match={match} />
-              )}
-            />
-            <Route
-              exact path="/userDetails/:pk"
-              children={({match}) => (
-                <UserDetails createNotification={this.createNotification} match={match} />
-              )}
-            />
-            <PrivateRoute
-              path="/createBook"
-              createNotification={this.createNotification}
-              component={NewBook}
-            />
-            <PrivateRoute
-              path="/editBook/:pk"
-              createNotification={this.createNotification}
-              component={EditBook} 
-            />
-            <Route path="/login">
-              <div className="login">
-                <div className="container" ref={ref => (this.container = ref)}>
-                  {isLogginActive && (
-                    <Login containerRef={ref => (this.current = ref)} createNotification={this.createNotification} refresh={this.refresh.bind(this)}
-                    />
-                  )}
-                  {!isLogginActive && (
-                    <Register containerRef={ref => (this.current = ref)} createNotification={this.createNotification} changeState={this.changeState.bind(this)} />
-                  )}
-                </div>
-                <RightSide
-                  current={current}
-                  currentActive={currentActive}
-                  containerRef={ref => (this.rightSide = ref)}
-                  onClick={this.changeState.bind(this)}
-                  isLogginActive={this.state.isLogginActive}
-                />
+  return (
+    <Router>
+      <div className="App">
+        <NotificationSystem ref={notificationSystem} />
+        <Sidebar createNotification={createNotification}/>
+        <Switch>
+          <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
+          <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
+          <Route exact path="/home" component={Home}/>
+          <Route exact path="/usersList" component={UsersList}/>
+          <Route
+            exact path="/requestsList/:reader?/:status?"
+            children={({match}) => (
+              <RequestsList createNotification={createNotification} match={match} />
+            )}
+          />
+          <Route
+            exact path="/recordsList/:reader?/:status?"
+            children={({match}) => (
+              <RecordsList createNotification={createNotification} match={match} />
+            )}
+          />
+          <Route
+            exact path="/analysis/:reader?/:status?"
+            children={({match}) => (
+              <Analysis createNotification={createNotification} match={match} />
+            )}
+          />
+          <Route
+            exact path="/bookDetails/:pk"
+            children={({match}) => (
+              <BookDetails createNotification={createNotification} match={match} />
+            )}
+          />
+          <Route
+            exact path="/userDetails/:pk"
+            children={({match}) => (
+              <UserDetails createNotification={createNotification} match={match} />
+            )}
+          />
+          <PrivateRoute
+            path="/createBook"
+            createNotification={createNotification}
+            component={NewBook}
+          />
+          <PrivateRoute
+            path="/editBook/:pk"
+            createNotification={createNotification}
+            component={EditBook} 
+          />
+          <Route path="/login">
+            <div className="login">
+              <div className="container">
+                {isLogginActive && (
+                  <Login createNotification={createNotification}
+                  />
+                )}
+                {!isLogginActive && (
+                  <Register createNotification={createNotification}  />
+                )}
               </div>
-            </Route>
+              <RightSide
+                current={current}
+                currentActive={currentActive}
+                isLogginActive={isLogginActive}
+              />
+            </div>
+          </Route>
 
-          </Switch>
-          
-      </div>
-      
-    </Router>
-    );
-  }
+        </Switch>
+        
+    </div>
+  </Router>
+  )
 }
 
 
 // Container for login and register tab
 const RightSide = props => {
   let containerSide;
+  const dispatch = useDispatch();
   if (props.isLogginActive) {
     containerSide = "left";
   } else {
@@ -152,8 +118,7 @@ const RightSide = props => {
 
     <div
       className= {"right-side " + containerSide}
-      ref={props.containerRef}
-      onClick={props.onClick}
+      onClick={() => dispatch(changeState())}
     >
       <div className="inner-container">
         <div className="text">{props.current}</div>

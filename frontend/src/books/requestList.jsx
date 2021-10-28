@@ -8,6 +8,9 @@ import {
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
+
 // Displays All Requests or specific by reader
 export function RequestsList(props) {
   const reader = props.match.params.reader;
@@ -16,6 +19,7 @@ export function RequestsList(props) {
   const location = useLocation();
   const baseURL = '../server/api/requests';
   const status = props.match.params.status;
+  const dispatch = useDispatch()
   let url = `../server/api/${reader}/requests`;
 
   function displayList(filter){     
@@ -38,12 +42,12 @@ export function RequestsList(props) {
                     axios
                     .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book.title, 'issue_period_weeks': request.issue_period_weeks})
                     .then(res => {
-                      props.createNotification(`Book '${request.book.title}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success');
+                      dispatch(createNotification([`Book '${request.book.title}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success']));
                       history.push('/');
                       history.goBack(); 
                     })
                     .catch((error) => {
-                      props.createNotification(error.message+'. Book is currently unavailable right now', 'error')
+                      dispatch(createNotification([error.message+'. Book is currently unavailable right now', 'error']))
                     })
                   }
                 >
@@ -55,12 +59,12 @@ export function RequestsList(props) {
                   axios
                   .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})
                   .then(res => {
-                    props.createNotification(`Issue Request for book '${request.book.title}' by User '${request.reader}' Rejected`, 'success');
+                    dispatch(createNotification([`Issue Request for book '${request.book.title}' by User '${request.reader}' Rejected`, 'success']));
                     history.push('/')
                     history.goBack(); 
                   })
                   .catch((error) => {
-                    props.createNotification(error.message, 'error')
+                    dispatch(createNotification([error.message, 'error']))
                   })
                 }>
                   Reject
@@ -99,7 +103,7 @@ export function RequestsList(props) {
     .then(res => {
       setRequestsList(res.data);
     })
-    .catch( (error) => props.createNotification(error.message, 'error'))  
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))  
   }, [reader, status])
   
   return (

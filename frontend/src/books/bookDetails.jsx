@@ -6,6 +6,9 @@ import {
 
 import axios from "../auth/axiosConfig";
 import { useAuth } from "../auth"
+import { changeState } from "../reduxStore/bookSlice";
+import { useDispatch } from "react-redux";
+import { createNotification } from "../reduxStore/appSlice";
 
 
 // Display Details of Book and its comments
@@ -14,12 +17,13 @@ export function BookDetails(props) {
   const history = useHistory();
   const [logged] = useAuth();
   const [bookDetails, setBookDetails] = useState({ book: null});
+  const dispatch = useDispatch()
   useEffect(async() => {
     const bookData = await axios(
       `server/api/book/${pk}`
     );
     if (!localStorage.getItem('isStaff') && bookData.data.quantity==0)
-      props.createNotification('Book is currently unavailable now. You can still request for issue but it will only be accepted when book is available', 'warning')
+      dispatch(createNotification(['Book is currently unavailable now. You can still request for issue but it will only be accepted when book is available', 'warning']))
     setBookDetails({ book: bookData.data})
   
   }, [])
@@ -29,10 +33,10 @@ export function BookDetails(props) {
     axios
     .delete(url)
     .then(res => {
-      props.createNotification('Book Deleted', 'success');
+      dispatch(createNotification(['Book Deleted', 'success']));
       history.goBack();
     })
-    .catch( (error) => props.createNotification(error.message + '.Either Unauthorised or Empty Field', 'error'))
+    .catch( (error) => dispatch(createNotification([error.message + '.Either Unauthorised or Empty Field', 'error'])))
   }
   
   function displayDetail(){
@@ -66,16 +70,17 @@ export function BookDetails(props) {
                 <div class="controls">
                   {localStorage.getItem('isStaff') && (
                     <p>
-                      <button className='btn' onClick={() => 
-                        history.push({pathname: `/editBook/${pk}`,
-                                      query: {title: bookDetails.book.title,
-                                              summary: bookDetails.book.summary,
-                                              author: bookDetails.book.author,
-                                              cover: bookDetails.book.cover,
-                                              published_on: bookDetails.book.published_on,
-                                              category: bookDetails.book.category,
-                                              quantity: bookDetails.book.quantity}
-                                    })
+                      <button className='btn' onClick={() => {
+                        dispatch(changeState({title: bookDetails.book.title,
+                          summary: bookDetails.book.summary,
+                          author: bookDetails.book.author,
+                          cover: bookDetails.book.cover,
+                          published_on: bookDetails.book.published_on,
+                          category: bookDetails.book.category,
+                          quantity: bookDetails.book.quantity}))
+                        history.push(`/editBook/${pk}`)
+                        
+                      }
                                       }>
                         Edit
                       </button>
@@ -92,11 +97,11 @@ export function BookDetails(props) {
                           axios
                           .post('server/api/requests/create', {'book': bookDetails.book.title, 'issue_period_weeks':document.getElementById("issue-period").value})
                           .then(res => {
-                            props.createNotification(`Issue Request for book ${bookDetails.book.title} Created`, 'success');
+                            dispatch(createNotification([`Issue Request for book ${bookDetails.book.title} Created`, 'success']));
                             history.goBack(); 
                           })
                           .catch((error) => {
-                            props.createNotification(error.message+'. You already have a pending request', 'error')
+                            dispatch(createNotification([error.message+'. You already have a pending request', 'error']))
                           })
                           }
                         }

@@ -7,6 +7,9 @@ import {
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
+
 // Displays All Records or specific by reader
 export function RecordsList(props) {
   const reader = props.match.params.reader;
@@ -14,6 +17,7 @@ export function RecordsList(props) {
   const history = useHistory();
   const baseURL = '../server/api/records';
   const status = props.match.params.status;
+  const dispatch = useDispatch();
   let url = `../server/api/${reader}/records`;
   
   function displayList(filter){     
@@ -26,15 +30,15 @@ export function RecordsList(props) {
         
         if(!localStorage.getItem('isStaff') && localStorage.getItem('name')){
           if (new Date() > new Date(deadline_issue) && !record.return_date){
-            props.createNotification(`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning');
+            dispatch(createNotification([`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning']));
             classVar = "text-danger";
           }
           else if (new Date(deadline_issue).setHours(0,0,0,0) === new Date().setHours(0,0,0,0) && !record.return_date){
-            props.createNotification(`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning');
+            dispatch(createNotification([`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning']));
             classVar = "text-warning";
           }
           if (record.fine > 0 && record.fine_status !== 'paid'){
-            props.createNotification(`You have pending fine for late returning "${record.book.title}". Please pay it`, 'error');
+            dispatch(createNotification([`You have pending fine for late returning "${record.book.title}". Please pay it`, 'error']));
             classVar = "bg-warning";  
           }
         }
@@ -68,12 +72,12 @@ export function RecordsList(props) {
                     {'return_date': date},
                     )
                   .then(res => {
-                    props.createNotification(`Book '${record.book.title}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success');
+                    dispatch(createNotification([`Book '${record.book.title}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success']));
                     history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {
-                    props.createNotification(error.message, 'error')
+                    dispatch(createNotification([error.message, 'error']))
                   })
                 }}
               >
@@ -92,12 +96,12 @@ export function RecordsList(props) {
                     {'fine_status': 'paid'},
                     )
                   .then(res => {
-                    props.createNotification(`Fine for Book '${record.book.title}' Successfully Paid For User '${record.reader}'.`, 'success');
+                    dispatch(createNotification([`Fine for Book '${record.book.title}' Successfully Paid For User '${record.reader}'.`, 'success']));
                     history.push('/');
                     history.goBack(); 
                   })
                   .catch((error) => {
-                    props.createNotification(error.message, 'error')
+                    dispatch(createNotification([error.message, 'error']))
                   })
                 }}
               >
@@ -184,7 +188,7 @@ export function RecordsList(props) {
     .then(res => {
       setRecordsList(res.data);
     })
-    .catch( (error) => props.createNotification(error.message, 'error'))
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))
   }, [reader])
   
   return (

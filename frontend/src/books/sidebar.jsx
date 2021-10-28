@@ -1,4 +1,6 @@
 import React from 'react';
+import {  useDispatch } from 'react-redux';
+import {  changeName, createNotification } from '../reduxStore/appSlice'
 
 import {
   CDBSidebar,
@@ -18,20 +20,20 @@ export function Sidebar (props) {
   const [logged] = useAuth();
   const isStaff = localStorage.getItem('isStaff');
   const history = useHistory();
-  
+  const dispatch = useDispatch();
   function serverLogout() {
     axios
     .post('server/api/logout/', {"refresh_token": localStorage.getItem("refresh_token")})
     .then(() =>{
       logout();
-      props.createNotification('Logged Out', 'success');
+      dispatch(createNotification(['Logged Out', 'success']));
       localStorage.setItem('isStaff', '');
       localStorage.setItem('name', '')
       localStorage.setItem('id', '')
       localStorage.removeItem("access_token")
       localStorage.removeItem("refresh_token")
       axios.defaults.headers['Authorization'] = null;
-      props.refresh();
+      dispatch(changeName(localStorage.getItem('name')));
       history.push('/login');
       history.replace('/');
       }); 

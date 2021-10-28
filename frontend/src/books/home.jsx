@@ -4,10 +4,13 @@ import { NavLink } from "react-router-dom";
 import axios from "../auth/axiosConfig";
 
 import Carousel from "react-bootstrap/Carousel";
-// Displays All Books or specific by author
-export function Home(props) {
-  const [categories, setCategories] = useState();
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
 
+// Displays All Books or specific by author
+export function Home() {
+  const [categories, setCategories] = useState();
+  const dispatch = useDispatch();
   function displayCategories(){     
     if (categories){
       return categories.map((cat)=>{

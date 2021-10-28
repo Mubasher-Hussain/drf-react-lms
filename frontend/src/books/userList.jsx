@@ -6,12 +6,14 @@ import SearchField from 'react-search-field';
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
 
 // Displays All Users or specific by author
 export function UsersList() {
   const [usersList, setUsersList] = useState();
   const url = '../server/api/users';
-
+  const dispatch = useDispatch();
   function displayList(filter){     
     if (usersList && usersList.length){
       return usersList.map((user)=>{
@@ -48,7 +50,7 @@ export function UsersList() {
     .then(res => {
       setUsersList(res.data);
     })
-    .catch( (error) => alert(error))  
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))  
   }, [])
   
   return (

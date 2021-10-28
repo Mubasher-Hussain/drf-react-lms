@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
 import {
   NavLink,
   useHistory,
@@ -11,6 +13,7 @@ import axios from "../auth/axiosConfig";
 export function UserDetails(props) {
   const pk = props.match.params.pk;
   const history = useHistory();
+  const dispatch = useDispatch();
   const [userDetails, setUserDetails] = useState({ user: null, fine: null});
   useEffect(async() => {
     const userData = await axios(
@@ -24,10 +27,10 @@ export function UserDetails(props) {
     axios
     .delete(url)
     .then(res => {
-      props.createNotification('User Deleted', 'success');
+      dispatch(createNotification('User Deleted', 'success'));
       history.goBack();
     })
-    .catch( (error) => props.createNotification(error.message + '.Unauthorised', 'error'))
+    .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
   }
   
   function displayDetail(){

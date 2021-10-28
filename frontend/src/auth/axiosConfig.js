@@ -1,7 +1,4 @@
 import axios from 'axios'
-axios.defaults.xsrfHeaderName = "X-CSRFToken"
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.withCredentials = true
 axios.defaults.baseURL = "../";
 axios.defaults.headers['Authorization'] = localStorage.getItem('access_token') ? "JWT " + localStorage.getItem('access_token') : null ;
 
