@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'server',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'lms.urls'
 
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = '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'
+SENDGRID_SANDBOX_MODE_IN_DEBUG=False
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -126,6 +130,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Celery Configuration Options
+CELERY_TIMEZONE = "Asia/Karachi"
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
 
 
 # Internationalization
