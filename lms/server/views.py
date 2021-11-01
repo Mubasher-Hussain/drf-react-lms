@@ -5,7 +5,6 @@ import pytz
 from django.contrib.auth.models import User
 from django.db.models import Sum, Count
 from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 from django.utils import timezone
