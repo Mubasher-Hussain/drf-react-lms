@@ -17,9 +17,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from server.models import Book, Record, Request
+from server.models import Book, Record, Request, Address
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer
+from asgiref.sync import AsyncToSync
+from channels.layers import get_channel_layer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
@@ -231,3 +233,20 @@ def logout_request(request):
     if refresh_token:
         token.blacklist()
     return JsonResponse({'Success': 'Logged Out'})
+
+def print_channel(request):
+    channel_layer = get_channel_layer()
+    body = json.loads(request.body)
+    message = body['message']
+    recipient = User.objects.get(username=body['recipient'])
+    try:
+        address = Address.objects.get(reader=recipient)
+        channel = address.channel_name
+        AsyncToSync(channel_layer.send)(channel, {
+            "type": "notify.user",
+            "text": message,
+        })
+        return JsonResponse({'success': 'success'})
+    except Address.DoesNotExist:
+        return JsonResponse({'error': 'The recipient is not online'})    
+    

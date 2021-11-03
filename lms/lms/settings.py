@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'server',
+    'channels',
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_results',
 ]
@@ -53,13 +54,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "lms.middleware.metric_middleware",
+    #"lms.middleware.metric_middleware",
 ]
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 ROOT_URLCONF = 'lms.urls'
 
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = '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'
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
 SENDGRID_SANDBOX_MODE_IN_DEBUG=False
 TEMPLATES = [
     {
@@ -78,6 +88,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'lms.wsgi.application'
+ASGI_APPLICATION = 'lms.asgi.application'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -161,21 +173,21 @@ STATIC_URL = '/static/'
 
 # nplusone
 
-NPLUSONE_LOGGER = logging.getLogger("nplusone")
-NPLUSONE_LOG_LEVEL = logging.WARNING
-NPLUSONE_RAISE = False
+#NPLUSONE_LOGGER = logging.getLogger("nplusone")
+#NPLUSONE_LOG_LEVEL = logging.WARNING
+#NPLUSONE_RAISE = False
 
 
 # Logging
 
-LOGGING = {
-    "version": 1,
-    "handlers": {"console": {"class": "logging.StreamHandler"},},
-    "loggers": {
-        "nplusone": {"handlers": ["console"], "level": "WARN",},
-        "debug": {"handlers": ["console"], "level": "DEBUG",},
-    },
-}
+#LOGGING = {
+#    "version": 1,
+#    "handlers": {"console": {"class": "logging.StreamHandler"},},
+#    "loggers": {
+#        "nplusone": {"handlers": ["console"], "level": "WARN",},
+#        "debug": {"handlers": ["console"], "level": "DEBUG",},
+#    },
+#}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

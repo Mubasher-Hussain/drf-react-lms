@@ -9,8 +9,22 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/asgi/
 
 import os
 
-from django.core.asgi import get_asgi_application
+from django.conf.urls import url
+from server import consumers
+
+from channels.routing import ProtocolTypeRouter, URLRouter
+from .token_middleware import JwtAuthMiddlewareStack
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lms.settings')
 
-application = get_asgi_application()
+websocket_urlpatterns = [
+    url(r'^ws/chat$', consumers.NotificationConsumer.as_asgi()),
+]
+
+application = ProtocolTypeRouter({
+    'websocket': JwtAuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    ),
+})
