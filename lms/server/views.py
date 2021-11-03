@@ -1,7 +1,10 @@
-import json, datetime
-
+import datetime
+import json
 import pytz
 import redis
+
+from asgiref.sync import AsyncToSync
+from channels.layers import get_channel_layer
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -10,10 +13,9 @@ from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
-from django.utils import timezone
 
 from rest_framework import generics, permissions
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -22,8 +24,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from server.models import Book, Record, Request
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer
-from asgiref.sync import AsyncToSync
-from channels.layers import get_channel_layer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
@@ -175,12 +175,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         data['fine'] = overdue['fine__sum']
         return Response(data)
 
-
+@api_view(['GET'])
 def get_categories(request):
     categories = list(Book.objects.all().values_list("category").distinct())
     return JsonResponse({'categories': categories})
 
-
+@api_view(['GET'])
 def book_graph(request, reader=None):    
     output = {}
     if reader:
@@ -191,8 +191,8 @@ def book_graph(request, reader=None):
         output[obj['book']] = obj['books_issued']
     return JsonResponse(output)
 
-
-def stats(request, reader=None):    
+@api_view(['GET'])
+def stats(request, reader=None):
     output = {}
     if reader:
         output['issue'] = Record.objects.filter(reader=reader, return_date= None).count()
@@ -204,22 +204,21 @@ def stats(request, reader=None):
         output['fine'] = Record.objects.aggregate(Sum('fine'))['fine__sum']
     return JsonResponse(output)
 
-
+@api_view(['POST'])
 def register_reader(request):
     """For registering of normal readers"""
-    if request.method == 'POST':
-        body = json.loads(request.body)
-        try:
-            user = User.objects.create_user(body['username'], body['email'], body['password'])
-            send_mail('Registered', 'You have been successfully registered.', 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
-            return JsonResponse({'success': "Registered as normal User."})
-        except:
-            return JsonResponse({'error': "Username or Email already exists"})
+    body = json.loads(request.body)
+    try:
+        user = User.objects.create_user(body['username'], body['email'], body['password'])
+        send_mail('Registered', 'You have been successfully registered.', 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
+        return JsonResponse({'success': "Registered as normal User."})
+    except:
+        return JsonResponse({'error': "Username or Email already exists"})
 
-
+@api_view(['POST'])
 def register_librarian(request):
     """For registering of staff"""
-    if request.method == 'POST':
+    if request.user.is_superuser:
         body = json.loads(request.body)
         try:
             user = User.objects.create_user(body['username'], body['email'], body['password'])
@@ -228,8 +227,9 @@ def register_librarian(request):
             return JsonResponse({'success': "Registered as staff."})
         except:
             return JsonResponse({'error': "Username or Email already exists"})
+    return JsonResponse({'error': "Need Admin Priviliges"})
 
-
+@api_view(['POST'])
 def logout_request(request):
     body = json.loads(request.body)
     refresh_token = body["refresh_token"]
@@ -238,6 +238,7 @@ def logout_request(request):
         token.blacklist()
     return JsonResponse({'Success': 'Logged Out'})
 
+@api_view(['POST'])
 def print_channel(request):
     channel_layer = get_channel_layer()
     body = json.loads(request.body)
