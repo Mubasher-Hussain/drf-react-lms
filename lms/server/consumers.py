@@ -1,9 +1,7 @@
 import json
 
-from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from server.models import Address
-
+from server.views import redis_instance
 
 class NotificationConsumer(AsyncWebsocketConsumer):
 
@@ -11,10 +9,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         if self.user.username:
             await self.accept()
-            await Address.create(user=self.user , channel_name=self.channel_name)        
+            redis_instance.set(self.user.username, self.channel_name)
 
     async def disconnect(self, close_code):
-        await Address.delete(channel_name=self.channel_name)
+        redis_instance.delete(self.user.username)
         pass
 
     async def notify_user(self, event):
