@@ -21,9 +21,33 @@ function App (){
   const isLogginActive = useSelector((state) => state.app.isLogginActive)
   const name = useSelector((state) => state.app.name)
   const dispatch = useDispatch()
+  
   useEffect(() => {
     dispatch(setRef(notificationSystem))
   }, [notificationSystem])
+  
+  useEffect(() => {
+    connect();
+  }, [name])
+  
+  function connect(){
+    var socketRef = new WebSocket('ws://localhost:8000/ws/chat' + "?token=" + localStorage.getItem('access_token'))
+    socketRef.onopen = () => {
+      dispatch(createNotification(['WebSocket open', 'success']));
+    };
+    socketRef.onmessage = e => {
+      dispatch(createNotification([e.data, 'warning']));
+    };
+
+    socketRef.onerror = e => {
+      dispatch(createNotification(['Error in socket', 'error']));
+    };
+    socketRef.onclose = () => {
+      dispatch(createNotification(['WebSocket Closed, Retrying', 'error']));
+      if(localStorage.getItem('access_token'))
+        connect();
+    };
+  }
 
   const current = isLogginActive ? "Register" : "Login";
   const currentActive = isLogginActive ? "login" : "register";

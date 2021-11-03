@@ -32,7 +32,19 @@ export function UserDetails(props) {
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
   }
-  
+  function pushNotify(){
+    axios
+    .post('server/api/notify', {'recipient': userDetails.user.username, 'message': document.getElementById('notify').value})
+    .then(res => {
+      if (res.data.success){
+        dispatch(createNotification([res.data.success, 'success']));
+        history.push('/');
+        history.goBack();
+      }else      
+        dispatch(createNotification([res.data.error, 'error']));
+    })
+    .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
+  }
   function displayDetail(){
     if (userDetails && userDetails.user){
       return (
@@ -55,6 +67,18 @@ export function UserDetails(props) {
               <button type="button" className="btn" onClick={deleteUser}>
               Delete
               </button>
+              <div class="form-group">
+                <label style= {{float: 'left'}} htmlFor="notify">Push Notification</label>
+                <textarea
+                  class="form-control"
+                  id="notify"
+                  placeholder="Message"
+                />
+              </div>
+              <button type="button" className="btn" onClick={pushNotify}>
+                Send Message
+              </button>
+              
             </p>
           )}
                   
