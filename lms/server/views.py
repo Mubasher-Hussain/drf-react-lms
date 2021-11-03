@@ -3,6 +3,7 @@ import json, datetime
 import pytz
 
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
@@ -80,6 +81,8 @@ class RecordList(generics.ListCreateAPIView):
             status='pending')
         request.status='accepted'
         request.save()
+        send_mail('Book Issued', f"You have been issued book {self.request.data['book']} for {self.request.data['issue_period_weeks']} weeks.", "mubasherhussain3293@gmail.com", [self.request.user.email], fail_silently=True)
+            
 
 
 class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -111,6 +114,8 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
                 fine_status = 'pending'
             serializer.save(fine=fine, fine_status=fine_status)
         else:
+            record = self.get_object()
+            send_mail('Fine Paid', f"Your fine {record.fine} is paid successfully for overdue book {record.book} .", "mubasherhussain3293@gmail.com", [record.reader.email], fail_silently=True)
             serializer.save(fine_status='paid')
 
 
@@ -118,6 +123,7 @@ class RequestList(generics.ListCreateAPIView):
     queryset = Request.objects.all().order_by('-status')
     serializer_class = RequestSerializer
     permission_classes = [IsUniqueOrStaffOnly]
+    
     def get_queryset(self):
         """For displaying requests of specific reader if reader is specified in url"""
         if self.kwargs:
@@ -127,8 +133,10 @@ class RequestList(generics.ListCreateAPIView):
                 print('Reader not found')
         else:
             return Request.objects.all().order_by('-status')
+    
     def perform_create(self, serializer):
         serializer.save(reader=self.request.user)
+        send_mail('Request Created', f"Your request to issue book {self.request.data['book']} is created. Check your requests list to see your progress.", "mubasherhussain3293@gmail.com", [self.request.user.email], fail_silently=True)
 
 
 class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -150,6 +158,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsStaffOrSelfReadOnly]
     queryset = User.objects.filter(is_staff=False).order_by('username')
     serializer_class = UserSerializer
+    
     def retrieve(self, request, pk):
         """For adding fine for retreived user"""
         data = {}
@@ -196,6 +205,7 @@ def register_reader(request):
         body = json.loads(request.body)
         try:
             user = User.objects.create_user(body['username'], body['email'], body['password'])
+            send_mail('Registered', 'You have been successfully registered.', 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
             return JsonResponse({'success': "Registered as normal User."})
         except:
             return JsonResponse({'error': "Username or Email already exists"})
