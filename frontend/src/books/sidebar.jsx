@@ -1,5 +1,5 @@
 import React from 'react';
-import {  useDispatch } from 'react-redux';
+import {  useSelector, useDispatch } from 'react-redux';
 import {  changeName, createNotification } from '../reduxStore/appSlice'
 
 import {
@@ -27,15 +27,16 @@ export function Sidebar (props) {
     .then(() =>{
       logout();
       dispatch(createNotification(['Logged Out', 'success']));
-      localStorage.setItem('isStaff', '');
-      localStorage.setItem('name', '')
-      localStorage.setItem('id', '')
+      localStorage.removeItem('isStaff');
+      localStorage.removeItem('isAdmin');
+      localStorage.removeItem('name')
+      localStorage.removeItem('id')
       localStorage.removeItem("access_token")
       localStorage.removeItem("refresh_token")
       axios.defaults.headers['Authorization'] = null;
-      dispatch(changeName(localStorage.getItem('name')));
+      dispatch(changeName());
       history.push('/login');
-      history.replace('/');
+      history.push('/');
       }); 
   }
 
@@ -50,7 +51,8 @@ export function Sidebar (props) {
             className="text-decoration-none"
             style={{ color: 'inherit' }}
           >
-            Sidebar
+            {localStorage.getItem('name')}
+            {!localStorage.getItem('name') && 'Sidebar'}
           </a>
         </CDBSidebarHeader>
 
@@ -122,6 +124,14 @@ export function Sidebar (props) {
               }
             </NavLink>
             
+            <NavLink exact to="/addStaff" activeClassName="activeClicked">
+              {localStorage.getItem('isAdmin') &&
+                <CDBSidebarMenuItem icon="exclamation-circle">
+                  Add Staff
+                </CDBSidebarMenuItem>
+              }
+            </NavLink>
+            
             <p>
             {logged &&
               <CDBSidebarMenuItem icon="exclamation-circle" onClick={() => serverLogout()}>
@@ -135,4 +145,3 @@ export function Sidebar (props) {
     </div>
   );
 };
- 

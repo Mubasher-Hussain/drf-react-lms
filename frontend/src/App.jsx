@@ -61,6 +61,7 @@ function App (){
           <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
           <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
           <Route exact path="/home" component={Home}/>
+          <Route exact path="/addStaff" component={Register}/>
           <Route exact path="/usersList" component={UsersList}/>
           <Route
             exact path="/requestsList/:reader?/:status?"

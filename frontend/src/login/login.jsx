@@ -69,14 +69,15 @@ function LoginButton(props) {
       login(res);
       dispatch(createNotification(["Successfully logged in", 'success']));
       localStorage.setItem('isStaff', res.data.User=='staff' ? "True" : '');
+      localStorage.setItem('isAdmin', res.data.admin ? "True" : '');
       localStorage.setItem('name', formData.username);
       localStorage.setItem('id', res.data.id);
       localStorage.setItem('access_token', res.data.access);
       localStorage.setItem('refresh_token', res.data.refresh);
       axios.defaults.headers['Authorization'] = "JWT " + res.data.access;
-      dispatch(changeName(localStorage.getItem('name')));
-      history.push('../login');
-      history.replace('../');
+      dispatch(changeName());
+      history.push('/login');
+      history.replace('/');
     })
     .catch((error) => {
       dispatch(createNotification([error.message+'. Incorrect username or password', 'error']))

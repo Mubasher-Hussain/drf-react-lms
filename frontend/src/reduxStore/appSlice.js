@@ -12,8 +12,8 @@ export const appSlice = createSlice({
     setRef: (state, action) => {
       state.notificationSystem = action.payload
     },
-    changeName: (state, action) => {
-      state.name = action.payload
+    changeName: (state) => {
+      state.name = localStorage.getItem('name')
     },
     createNotification: (state, action) => {
       state.notificationSystem.current.addNotification({

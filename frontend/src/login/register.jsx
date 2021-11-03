@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { useHistory } from 'react-router-dom';
+import { useHistory,  useLocation,} from 'react-router-dom';
 
 import axios from "../auth/axiosConfig";
 import loginImg from "../login.svg";
@@ -29,7 +29,8 @@ export function Register (props) {
       isFormValid: false,
     });
   const dispatch = useDispatch()
-    
+  const location = useLocation()
+  
   // Updates state.error if any in form fields
   function handleInputChange(event) {
  
@@ -77,9 +78,11 @@ export function Register (props) {
     <div className="base-container">
       <div className="header">Register</div>
       <div className="content">
+        {!location.pathname.includes('addStaff') &&
         <div className="image">
           <img src={loginImg} alt=''/>
         </div>
+        }
         <div className="form">
           <div className="form-group">
             <input type="text"
@@ -124,12 +127,12 @@ export function Register (props) {
       </div>
     </div>
   )
-  
 }
 
 
 function RegisterButton(props) {
   const history = useHistory();
+  const location = useLocation()
   const dispatch = useDispatch();
   function handleClick(type) {
     if(!props.isFormValid){
@@ -137,7 +140,7 @@ function RegisterButton(props) {
       var errorValues = Object.keys(errors).map(function(key){
         return errors[key];
        });
-      dispatch(createNotification ([errorValues.join('\n'), 'error']));
+      dispatch(createNotification ([errorValues.join('.'), 'error']));
       return null;
     }
     let formData = props.formData;
@@ -154,23 +157,26 @@ function RegisterButton(props) {
         dispatch(createNotification([res.data.error, 'error']));
       }
       else{
-        dispatch(createNotification([res.data.success + '. Now Login', 'success']));
+        dispatch(createNotification([res.data.success, 'success']));
         dispatch(changeState())
         history.push('/');
         history.push('/login');
       }
-
     })    
   }
 
   return (
     <div>
+      {!(location.pathname.includes('addStaff')) && 
       <button type="button" className="btn" onClick={() => handleClick('reader')}>
         Register as User
       </button>
+      }
+      {location.pathname.includes('addStaff') &&
       <button type="button" className="btn" onClick={() => handleClick('staff')}>
-        Register as Staff
+        Add Staff
       </button>
+      }
     </div>
   );
 }
