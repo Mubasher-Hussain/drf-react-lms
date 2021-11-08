@@ -14,21 +14,33 @@ from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, filters
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from server.models import Book, Record, Request
-from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable
+from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable, IsAdmin
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
 redis_instance = redis.StrictRedis(host=settings.REDIS_HOST,
                                   port=settings.REDIS_PORT, charset="utf-8", decode_responses=True, db=0)
+
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+    def get_paginated_response(self, data):
+        response = super(CustomPagination, self).get_paginated_response(data)
+        response.data['total_pages'] = self.page.paginator.num_pages
+        return response
 
 
 class ObtainTokenPairWithUserType(TokenObtainPairView):
@@ -41,6 +53,10 @@ class BooksList(generics.ListCreateAPIView):
     permission_classes = [IsStaffOrReadOnly]
     parser_classes = (MultiPartParser, FormParser)
     queryset = Book.objects.all().order_by('title')
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['title', 'id', 'author', 'category', 'quantity', 'published_on']
+    search_fields = ['title', 'author', 'category', 'published_on']
+    pagination_class = CustomPagination
     serializer_class = BooksSerializer
     def get_queryset(self):
         """For displaying author specific posts if author is specified in url"""
@@ -64,6 +80,10 @@ class RecordList(generics.ListCreateAPIView):
     permission_classes = [IsStaffOrReaderOnly, IsBookAvailable]
     queryset = Record.objects.all().order_by('reader')
     serializer_class = RecordSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['book__title', 'reader__username', 'fine_status', 'issue_date', 'return_date', 'fine']
+    search_fields = [ 'reader__username', 'fine_status', 'book__title', 'issue_date', 'return_date', 'fine']
+    pagination_class = CustomPagination
     def get_queryset(self):
         """For displaying records of specific reader if reader is specified in url"""
         if self.kwargs:
@@ -129,6 +149,10 @@ class RequestList(generics.ListCreateAPIView):
     queryset = Request.objects.all().order_by('-status')
     serializer_class = RequestSerializer
     permission_classes = [IsUniqueOrStaffOnly]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['book__title', 'reader__username', 'book__quantity', 'issue_period_weeks', 'status']
+    search_fields = [ 'reader__username', 'status', 'book__title']
+    pagination_class = CustomPagination
     
     def get_queryset(self):
         """For displaying requests of specific reader if reader is specified in url"""
@@ -157,7 +181,10 @@ class UsersList(generics.ListAPIView):
     permission_classes = [IsStaffOrSelfReadOnly]
     queryset = User.objects.filter(is_staff=False).order_by('username')
     serializer_class = UserSerializer
-
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email']
+    pagination_class = CustomPagination
+    
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update or delete user"""
@@ -175,10 +202,25 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         data['fine'] = overdue['fine__sum']
         return Response(data)
 
+
+class RegisterLibrarian(APIView):
+    permission_classes = [IsAdmin]
+    def post(self, request):
+        body = request.data
+        try:
+            user = User.objects.create_user(body['username'], body['email'], body['password'])
+            user.is_staff=True
+            user.save()
+            return JsonResponse({'success': "Registered as staff."})
+        except:
+            return JsonResponse({'error': "Username or Email already exists"})
+
+
 @api_view(['GET'])
 def get_categories(request):
     categories = list(Book.objects.all().values_list("category").distinct())
     return JsonResponse({'categories': categories})
+
 
 @api_view(['GET'])
 def book_graph(request, reader=None):    
@@ -190,6 +232,7 @@ def book_graph(request, reader=None):
     for obj in list(data):
         output[obj['book']] = obj['books_issued']
     return JsonResponse(output)
+
 
 @api_view(['GET'])
 def stats(request, reader=None):
@@ -204,6 +247,7 @@ def stats(request, reader=None):
         output['fine'] = Record.objects.aggregate(Sum('fine'))['fine__sum']
     return JsonResponse(output)
 
+
 @api_view(['POST'])
 def register_reader(request):
     """For registering of normal readers"""
@@ -215,19 +259,6 @@ def register_reader(request):
     except:
         return JsonResponse({'error': "Username or Email already exists"})
 
-@api_view(['POST'])
-def register_librarian(request):
-    """For registering of staff"""
-    if request.user.is_superuser:
-        body = json.loads(request.body)
-        try:
-            user = User.objects.create_user(body['username'], body['email'], body['password'])
-            user.is_staff=True
-            user.save()
-            return JsonResponse({'success': "Registered as staff."})
-        except:
-            return JsonResponse({'error': "Username or Email already exists"})
-    return JsonResponse({'error': "Need Admin Priviliges"})
 
 @api_view(['POST'])
 def logout_request(request):
@@ -237,6 +268,7 @@ def logout_request(request):
     if refresh_token:
         token.blacklist()
     return JsonResponse({'Success': 'Logged Out'})
+
 
 @api_view(['POST'])
 def print_channel(request):

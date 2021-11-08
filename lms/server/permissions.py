@@ -32,6 +32,11 @@ class IsBookAvailable(permissions.BasePermission):
         return True
 
 
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_superuser
+
+
 class IsUniqueOrStaffOnly(permissions.BasePermission):
     """Readers can only view their own requests. Only unique pending requests can be created"""
     def has_permission(self, request, view):
