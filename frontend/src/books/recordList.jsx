@@ -5,15 +5,26 @@ import {
 } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
+import SearchField from 'react-search-field';
 
 import Table from "react-bootstrap/Table";
 import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
+import Pagination from "@mui/material/Pagination"
 
 // Displays All Records or specific by reader
 export function RecordsList(props) {
   const reader = props.match.params.reader;
   const [recordsList, setRecordsList] = useState();
+  const [page, setPage] = useState(1);
+  const [totalCount, setCount] = useState(10);
+  const [ordering, setOrdering] = useState('');
+  const [search, setSearch] = useState('');
+
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
+
   const history = useHistory();
   const baseURL = '../server/api/records';
   const status = props.match.params.status;
@@ -115,7 +126,7 @@ export function RecordsList(props) {
     })}
   }
 
-  function filter (event) {
+  function filter2 (event) {
     let item = event.target.value;
     var titles;
     if (item==='overdue'){
@@ -176,6 +187,25 @@ export function RecordsList(props) {
     }
   }
 
+  function filter(item){
+    setCount(1)
+    setSearch(item)
+  }
+
+  function switchOrdering(item){
+    if (item.includes('-'))
+      setOrdering(item.replace('-', ''))
+    else
+      setOrdering('-' + item)
+  }
+
+  function orderBy(item){
+    if (ordering.includes(item))
+      switchOrdering(ordering);
+    else
+      setOrdering(item);
+  }
+  
   useEffect(() => {
     if (!reader || reader==='All'){
       url = baseURL;
@@ -184,17 +214,22 @@ export function RecordsList(props) {
       url += `/${status}`
     }
     axios
-    .get(url)
+    .get(url, {params: {page: page, search: search, ordering: ordering}})
     .then(res => {
-      setRecordsList(res.data);
+      setCount(res.data.total_pages);
+      setRecordsList(res.data.results);
     })
     .catch( (error) => dispatch(createNotification([error.message, 'error'])))
-  }, [reader])
+  }, [reader, page, search, ordering])
   
   return (
     <div class='bookList'>
       <h1>{reader} Records List</h1>
-      <select class="form-select" onChange={filter.bind(this)} id="filter" aria-label="Default select example">
+      <SearchField 
+        placeholder='e.g field1 field2 field3'
+        onChange={filter}
+      />
+      <select class="form-select" onChange={filter2.bind(this)} id="filter" aria-label="Default select example">
         <option value="All" selected>All</option>
         <option value='fine-pending'>Fine Pending</option>
         <option value='fine-paid'>Fine Paid</option>
@@ -206,14 +241,14 @@ export function RecordsList(props) {
       <Table striped bordered hover>
           <thead>
             <tr>
-              <th>Reader</th>
-              <th>Book Title</th>
+              <th onClick={() => orderBy('reader__username')}>Reader</th>
+              <th onClick={() =>orderBy('book__title')}>Book Title</th>
               <th>Book Cover</th>
-              <th>Issue Date</th>
+              <th onClick={() =>orderBy('issue_date')}>Issue Date</th>
               <th>Deadline</th>
-              <th>Returned Date</th>
-              <th>Fine</th>
-              <th>Fine Status</th>
+              <th onClick={() =>orderBy('return_date')}>Returned Date</th>
+              <th onClick={() =>orderBy('fine')}>Fine</th>
+              <th onClick={() =>orderBy('fine_status')}>Fine Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -221,6 +256,7 @@ export function RecordsList(props) {
             {displayList()}
           </tbody>
         </Table>
+        <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
     </div>
   )
 }

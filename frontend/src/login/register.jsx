@@ -162,7 +162,8 @@ function RegisterButton(props) {
         history.push('/');
         history.push('/login');
       }
-    })    
+    })
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))    
   }
 
   return (

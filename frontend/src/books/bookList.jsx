@@ -6,12 +6,22 @@ import SearchField from 'react-search-field';
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+import Pagination from "@mui/material/Pagination"
 
 // Displays All Books or specific by author
 export function BooksList(props) {
   const author = props.match.params.author;
   const category = props.match.params.category;
   const [booksList, setBooksList] = useState();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [totalCount, setCount] = useState(10);
+  const [ordering, setOrdering] = useState('');
+
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
+
   const baseURL = '../server/api/books';
   let url = `../server/api/${author}/books`;
   let categoryUrl = '/booksList';
@@ -35,16 +45,24 @@ export function BooksList(props) {
         )
     })}
   }
+  
+  function filter (item) {
+    setCount(1)
+    setSearch(item)
+  }
 
-  function search (item) {
-    var titles = document.getElementsByClassName("title");
-    for (var i=0 ; i<titles.length ;  i++){
-      if (!titles[i].textContent.toUpperCase().match(item.toUpperCase())){
-        titles[i].parentElement.style.display = "none"
-      }
-      else
-        titles[i].parentElement.style.display = ""  
-    }
+  function switchOrdering(item){
+    if (item.includes('-'))
+      setOrdering(item.replace('-', ''))
+    else
+      setOrdering('-' + item)
+  }
+
+  function orderBy(item){
+    if (ordering.includes(item))
+      switchOrdering(ordering);
+    else
+      setOrdering(item);
   }
  
   useEffect(() => {
@@ -55,36 +73,38 @@ export function BooksList(props) {
       url+='/'+ category
     }
     axios
-    .get(url)
+    .get(url, {params: {page: page, search: search, ordering: ordering}})
     .then(res => {
-      setBooksList(res.data);
+      setCount(res.data.total_pages);
+      setBooksList(res.data.results);
     })
     .catch( (error) => alert(error))  
-  }, [author, category])
+  }, [author, category, page, search, ordering])
   
   return (
     <div class='bookList '>
       <h1>{author} Books List</h1>
       <SearchField 
-        placeholder='Search By Book Title'
-        onChange={search}
+        placeholder='e.g field1 field2 field3'
+        onChange={filter}
       /><hr/>
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th>ID</th>
+              <th onClick={() => orderBy('id')}>ID</th>
               <th>Cover</th>
-              <th>Title</th>
-              <th>Author</th>
-              <th>Category</th>
-              <th>Quantity</th>
-              <th>Published Date</th>
+              <th onClick={() => orderBy('title')}>Title</th>
+              <th onClick={() => orderBy('author')}>Author</th>
+              <th onClick={() => orderBy('category')}>Category</th>
+              <th onClick={() => orderBy('quantity')}>Quantity</th>
+              <th onClick={() => orderBy('published_on')}>Published Date</th>
             </tr>
           </thead>
           <tbody>
             {displayList()}
           </tbody>
         </Table>
+        <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
     </div>
   )
 }

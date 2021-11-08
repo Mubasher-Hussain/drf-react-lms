@@ -6,15 +6,26 @@ import {
 } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
+import SearchField from 'react-search-field';
 
 import Table from "react-bootstrap/Table";
 import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
+import Pagination from "@mui/material/Pagination"
 
 // Displays All Requests or specific by reader
 export function RequestsList(props) {
   const reader = props.match.params.reader;
   const [requestsList, setRequestsList] = useState();
+  const [page, setPage] = useState(1);
+  const [totalCount, setCount] = useState(10);
+  const [search, setSearch] = useState('');
+  const [ordering, setOrdering] = useState('');
+
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
+
   const history = useHistory();
   const location = useLocation();
   const baseURL = '../server/api/requests';
@@ -77,8 +88,9 @@ export function RequestsList(props) {
     })}
   }
 
-  function filter(event){
+  function filter2(event){
     let command = event.target.value ;
+    setPage(1);
     if(!status){
       if (command!=='All')
         history.push(`${location.pathname}/${command}`);
@@ -91,6 +103,25 @@ export function RequestsList(props) {
     }
   }
 
+  function filter(item){
+    setCount(1)
+    setSearch(item)
+  }
+
+  function switchOrdering(item){
+    if (item.includes('-'))
+      setOrdering(item.replace('-', ''))
+    else
+      setOrdering('-' + item)
+  }
+
+  function orderBy(item){
+    if (ordering.includes(item))
+      switchOrdering(ordering);
+    else
+      setOrdering(item);
+  }
+
   useEffect(() => {
     if (!reader || reader==='All'){
       url = baseURL;
@@ -99,17 +130,22 @@ export function RequestsList(props) {
       url += `/${status}`
     }
     axios
-    .get(url)
+    .get(url, {params: {page: page, search: search, ordering: ordering}})
     .then(res => {
-      setRequestsList(res.data);
+      setCount(res.data.total_pages);
+      setRequestsList(res.data.results);
     })
-    .catch( (error) => dispatch(createNotification([error.message, 'error'])))  
-  }, [reader, status])
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))
+  }, [reader, page, status, search, ordering])
   
   return (
     <div class='bookList'>
       <h1>{reader} Requests List</h1>
-      <select class="form-select" onChange={filter.bind(this)} id="filter" aria-label="Default select example">
+      <SearchField 
+        placeholder='e.g field1 field2 field3'
+        onChange={filter}
+      />
+      <select class="form-select" onChange={filter2.bind(this)} id="filter" aria-label="Default select example">
         <option value="All" selected>All</option>
         <option value="pending">Pending</option>
         <option value="accepted">Accepted</option>
@@ -117,21 +153,22 @@ export function RequestsList(props) {
       </select>
       <hr/>
       <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Reader</th>
-              <th>Book Title</th>
-              <th>Book Cover</th>
-              <th>Book Qty</th>
-              <th>Requested Issue Period</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayList()}
-          </tbody>
-        </Table>
+        <thead>
+          <tr>
+            <th onClick={() => orderBy('reader__username')}>Reader</th>
+            <th onClick={() => orderBy('book__title')}>Book Title</th>
+            <th>Book Cover</th>
+            <th onClick={() => orderBy('book__quantity')}>Book Qty</th>
+            <th onClick={() => orderBy('issue_period_weeks')}>Requested Issue Period</th>
+            <th onClick={() => orderBy('status')}>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayList()}
+        </tbody>
+      </Table>
+      <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
     </div>
   )
 }

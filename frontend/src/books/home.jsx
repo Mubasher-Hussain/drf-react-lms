@@ -70,7 +70,7 @@ function Item(props){
         axios
         .get(`../server/api/books/${props.category}`)
         .then(res => {
-              setBooks(res.data)
+              setBooks(res.data.results)
             })
         .catch( (error) => alert(error))         
     }, [])
