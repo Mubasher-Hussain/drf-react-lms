@@ -1,110 +1,166 @@
-import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-
-import SearchField from 'react-search-field';
+import React, { useEffect, useState, useMemo } from "react";
+import { 
+  useHistory,
+  NavLink } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
 
-import Table from "react-bootstrap/Table";
-import Pagination from "@mui/material/Pagination"
+import {TableContainer} from './'
+import { Container } from "reactstrap"
+import {SelectColumnFilter} from "./selectFilter"
+import "bootstrap/dist/css/bootstrap.min.css"
 
 // Displays All Books or specific by author
 export function BooksList(props) {
   const author = props.match.params.author;
+  const [authorsList, setAuthorsList] = useState();
   const category = props.match.params.category;
-  const [booksList, setBooksList] = useState();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [booksList, setBooksList] = useState([]);
+  const [loading, setLoading] = useState(false)
   const [totalCount, setCount] = useState(10);
-  const [ordering, setOrdering] = useState('');
-
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
-
+  const [totalPageCount, setTotalPageCount] = useState(0);
+  const history = useHistory();
   const baseURL = '../server/api/books';
   let url = `../server/api/${author}/books`;
-  let categoryUrl = '/booksList';
-  if (author)
-    categoryUrl += '/' + author
-  else
-    categoryUrl += '/' + 'All'
-  function displayList(filter){     
-    if (booksList && booksList.length){
-      return booksList.map((book)=>{
-        return(         
-          <tr>
-            <td>{book.id}</td>
-            <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ book.cover } /></td>
-            <td className='title'><NavLink to={'/bookDetails/' + book.id} >{book.title}</NavLink></td>
-            <td><NavLink to={'/booksList/' + book.author} >{book.author}</NavLink></td>
-            <td><NavLink to={`${categoryUrl}/${book.category}`}>{book.category}</NavLink></td>
-            <td >{book.quantity}</td>
-            <td >{book.published_on}</td>
-          </tr>            
-        )
-    })}
-  }
-  
-  function filter (item) {
-    setCount(1)
-    setSearch(item)
-  }
 
-  function switchOrdering(item){
-    if (item.includes('-'))
-      setOrdering(item.replace('-', ''))
-    else
-      setOrdering('-' + item)
-  }
 
-  function orderBy(item){
-    if (ordering.includes(item))
-      switchOrdering(ordering);
-    else
-      setOrdering(item);
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Id",
+        accessor: "id",
+        Filter: false,
+      },
+      {
+        Header: "Cover",
+        accessor: "cover",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <img style={{width: 175, height: 175}} className='tc br3' alt='No Pic found' src={ props.row.original.cover } />
+            );
+          }
+      },
+      {
+        Header: "Title",
+        accessor: "title",
+        Filter: false,
+        Cell: (props) => {
+          return(
+          <NavLink to={`/bookDetails/${props.row.original.id}`}>{props.row.original.title}</NavLink>);
+          }
+      },
+      {
+        Header: "Author",
+        accessor: "author",
+        Filter: SelectColumnFilter,
+        filter: 'includes',
+        Cell: (props) => {
+          return(
+            <NavLink to={'/booksList/' + props.row.original.author} >{props.row.original.author}</NavLink>
+            );
+          }
+      },
+      {
+        Header: "Category",
+        accessor: "category",
+        Filter: SelectColumnFilter,
+        filter: 'includes',
+        //disableSortBy: true,
+        Cell: (props) => {
+          return(
+            <NavLink to={`/booksList/${author}/${props.row.original.category}`}>{props.row.original.category}</NavLink>
+            );
+          }
+      },
+      {
+        Header: "Quantity",
+        accessor: "quantity",
+        Filter: false,
+      },
+      {
+        Header: "Published On",
+        accessor: "published_on",
+        Filter: false,
+      },
+    ],
+    [author]
+  )
+
+
+  function filter2(event){
+    let command = event.target.value ;
+    if(author!==command){
+      if(command!=='All')
+        history.push(`./${command}`);
+      else
+        history.push(`./All`);  
+    }
   }
  
-  useEffect(() => {
-    if (!author || author==='All'){
+  function displayAuthor(){
+    if (authorsList && authorsList.length){
+      return authorsList.map((author) => <option value={author.name}>{author.name}</option>)
+    }
+  }
+  
+  useEffect(async() => {
+    const authorsData = await axios('../server/api/authors');
+    setAuthorsList(authorsData.data)
+  }, [author])
+
+  function fetchData({pageSize, pageIndex, sortBy, globalFilter, filters}){
+    setLoading(true)
+    let ordering, catFilter, authFilter ;
+
+    for (let i=0 ; i<filters.length ; i++){
+    if(filters[i] && filters[i].id=='category')
+      catFilter = filters[i].value
+    if(filters[i] && filters[i].id=='author')
+      authFilter = filters[i].value
+    }
+    if (sortBy[0]){
+      ordering = sortBy[0].desc ? '-': '';
+      ordering += sortBy[0].id
+    }
+    if (authFilter){
+      url = `../server/api/${authFilter}/books`;
+    }
+    else if (!author || author==='All'){
       url = baseURL;
     }
-    if (category){
+    if (catFilter){
+      url+='/'+ catFilter
+    }
+    else if (category){
       url+='/'+ category
     }
     axios
-    .get(url, {params: {page: page, search: search, ordering: ordering}})
+    .get(url, {params: {page: pageIndex+1, search: globalFilter, ordering: ordering, page_size: pageSize}})
     .then(res => {
       setCount(res.data.total_pages);
       setBooksList(res.data.results);
+      setTotalPageCount(res.data.count)
+      setLoading(false)
     })
-    .catch( (error) => alert(error))  
-  }, [author, category, page, search, ordering])
-  
+    .catch( (error) => alert(error))
+  }
+
   return (
     <div class='bookList '>
       <h1>{author} Books List</h1>
-      <SearchField 
-        placeholder='e.g field1 field2 field3'
-        onChange={filter}
-      /><hr/>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th onClick={() => orderBy('id')}>ID</th>
-              <th>Cover</th>
-              <th onClick={() => orderBy('title')}>Title</th>
-              <th onClick={() => orderBy('author')}>Author</th>
-              <th onClick={() => orderBy('category')}>Category</th>
-              <th onClick={() => orderBy('quantity')}>Quantity</th>
-              <th onClick={() => orderBy('published_on')}>Published Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayList()}
-          </tbody>
-        </Table>
-        <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
+        <Container style={{ marginTop: 100 }}>
+          <TableContainer
+            columns={columns}
+            data={booksList}
+            fetchData={fetchData}
+            loading={loading}
+            pageCount={totalCount}
+            totalPageCount={totalPageCount}
+            filter_user={author}
+            filter_category={category}
+          />
+        </Container>
     </div>
   )
 }

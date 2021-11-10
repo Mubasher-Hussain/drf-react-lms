@@ -58,7 +58,7 @@ function App (){
         <NotificationSystem ref={notificationSystem} />
         <Sidebar createNotification={createNotification}/>
         <Switch>
-          <Route exact path='/'><Redirect to='/booksList'></Redirect></Route>
+          <Route exact path='/'><Redirect to='/booksList/All'></Redirect></Route>
           <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
           <Route exact path="/home" component={Home}/>
           <Route exact path="/addStaff" component={Register}/>

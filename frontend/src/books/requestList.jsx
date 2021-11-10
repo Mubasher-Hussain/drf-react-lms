@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   useHistory,
   useLocation,
@@ -6,25 +6,24 @@ import {
 } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
-import SearchField from 'react-search-field';
 
-import Table from "react-bootstrap/Table";
 import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
-import Pagination from "@mui/material/Pagination"
+import {TableContainer} from './'
+import { Container } from "reactstrap"
+import {SelectColumnFilter} from "./selectFilter"
+import "bootstrap/dist/css/bootstrap.min.css"
+
 
 // Displays All Requests or specific by reader
 export function RequestsList(props) {
   const reader = props.match.params.reader;
-  const [requestsList, setRequestsList] = useState();
-  const [page, setPage] = useState(1);
+  const [requestsList, setRequestsList] = useState([]);
+  const [loading, setLoading] = useState(false)
   const [totalCount, setCount] = useState(10);
-  const [search, setSearch] = useState('');
-  const [ordering, setOrdering] = useState('');
+  const [totalPageCount, setTotalPageCount] = useState(0);
+  
 
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
 
   const history = useHistory();
   const location = useLocation();
@@ -33,19 +32,64 @@ export function RequestsList(props) {
   const dispatch = useDispatch()
   let url = `../server/api/${reader}/requests`;
 
-  function displayList(filter){     
-    if (requestsList && requestsList.length){
-      return requestsList.map((request)=>{
-        return(         
-          <tr>
-            <td><NavLink to={'/requestsList/' + request.reader} >{request.reader}</NavLink></td>
-            <td className='title'>{request.book.title}</td>
-            <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ request.book.cover } /></td>
-            <td >{request.book.quantity}</td>
-            <td >{request.issue_period_weeks} week</td>
-            <td>{request.status}</td>
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Reader",
+        accessor: "reader",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <NavLink to={'/requestsList/' + props.row.original.reader} >{props.row.original.reader}</NavLink>
+            );
+          }
+      },
+      {
+        Header: "Title",
+        accessor: "book.title",
+        Filter: false,
+        Cell: (props) => {
+          return(
+          <NavLink to={`/bookDetails/${props.row.original.book.title}`}>{props.row.original.book.title}</NavLink>);
+          }
+      },
+      {
+        Header: "Cover",
+        Filter: false,
+        accessor: "book.cover",
+        Cell: (props) => {
+          return(
+            <img style={{width: 175, height: 175}} className='tc br3' alt='No Pic found' src={ props.row.original.book.cover } />
+            );
+          }
+      },
+      {
+        Header: "Quantity",
+        Filter: false,
+        accessor: "book.quantity",
+      },
+      {
+        Header: "Issue Period",
+        Filter: false,
+        accessor: "issue_period_weeks",
+      },
+      
+      {
+        Header: "Status",
+        accessor: "status",
+        Filter: SelectColumnFilter,
+        filter: 'includes',
+        disableSortBy: true,
+      },
+      {
+        Header: "Actions",
+        Filter: false,
+        accessor: "actions",
+        Cell: (props) => {
+          let request = props.row.original
+          return(
+            <div>
             {localStorage.getItem('isStaff') && (request.status==='pending') && (
-            <td>
               <p>
                 <button
                   className='btn'
@@ -81,16 +125,18 @@ export function RequestsList(props) {
                   Reject
                 </button>
               </p>
-            </td>
             )}
-          </tr>            
-        )
-    })}
-  }
+            </div>
+            );
+          }
+      },
+    ],
+    []
+  )
+
 
   function filter2(event){
     let command = event.target.value ;
-    setPage(1);
     if(!status){
       if (command!=='All')
         history.push(`${location.pathname}/${command}`);
@@ -103,26 +149,19 @@ export function RequestsList(props) {
     }
   }
 
-  function filter(item){
-    setCount(1)
-    setSearch(item)
-  }
-
-  function switchOrdering(item){
-    if (item.includes('-'))
-      setOrdering(item.replace('-', ''))
-    else
-      setOrdering('-' + item)
-  }
-
-  function orderBy(item){
-    if (ordering.includes(item))
-      switchOrdering(ordering);
-    else
-      setOrdering(item);
-  }
-
-  useEffect(() => {
+  
+  function fetchData({pageSize, pageIndex, sortBy, globalFilter}){
+    setLoading(true)
+    let ordering ;
+    if (sortBy[0]){
+      ordering = sortBy[0].desc ? '-': '';
+      
+      if(sortBy[0].id=='reader')
+        ordering += 'reader__username'
+      else
+        ordering += sortBy[0].id
+      ordering = ordering.replace('.', '__')
+    }
     if (!reader || reader==='All'){
       url = baseURL;
     }
@@ -130,45 +169,33 @@ export function RequestsList(props) {
       url += `/${status}`
     }
     axios
-    .get(url, {params: {page: page, search: search, ordering: ordering}})
+    .get(url, {params: {page: pageIndex+1, search: globalFilter, ordering: ordering, page_size: pageSize}})
     .then(res => {
       setCount(res.data.total_pages);
       setRequestsList(res.data.results);
+      setTotalPageCount(res.data.count)
+      setLoading(false)
     })
     .catch( (error) => dispatch(createNotification([error.message, 'error'])))
-  }, [reader, page, status, search, ordering])
-  
+  }
+
+
   return (
     <div class='bookList'>
-      <h1>{reader} Requests List</h1>
-      <SearchField 
-        placeholder='e.g field1 field2 field3'
-        onChange={filter}
-      />
-      <select class="form-select" onChange={filter2.bind(this)} id="filter" aria-label="Default select example">
-        <option value="All" selected>All</option>
-        <option value="pending">Pending</option>
-        <option value="accepted">Accepted</option>
-        <option value="rejected">Rejected</option>
-      </select>
+     <h1>{reader} Requests List</h1>
       <hr/>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th onClick={() => orderBy('reader__username')}>Reader</th>
-            <th onClick={() => orderBy('book__title')}>Book Title</th>
-            <th>Book Cover</th>
-            <th onClick={() => orderBy('book__quantity')}>Book Qty</th>
-            <th onClick={() => orderBy('issue_period_weeks')}>Requested Issue Period</th>
-            <th onClick={() => orderBy('status')}>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayList()}
-        </tbody>
-      </Table>
-      <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
+      <Container style={{ marginTop: 100 }}>
+        <TableContainer
+          columns={columns}
+          data={requestsList}
+          fetchData={fetchData}
+          loading={loading}
+          pageCount={totalCount}
+          totalPageCount={totalPageCount}
+          filter_user={reader}
+          filter_category={status}
+        />
+      </Container>
     </div>
   )
 }

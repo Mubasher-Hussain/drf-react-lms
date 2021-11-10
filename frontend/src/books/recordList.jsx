@@ -1,76 +1,127 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   useHistory,
   NavLink,
 } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
-import SearchField from 'react-search-field';
 
-import Table from "react-bootstrap/Table";
 import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
-import Pagination from "@mui/material/Pagination"
+
+import {TableContainer} from './'
+import { Container } from "reactstrap"
+import "bootstrap/dist/css/bootstrap.min.css"
 
 // Displays All Records or specific by reader
 export function RecordsList(props) {
   const reader = props.match.params.reader;
-  const [recordsList, setRecordsList] = useState();
-  const [page, setPage] = useState(1);
+  const [recordsList, setRecordsList] = useState([]);
+  const [loading, setLoading] = useState(false)
   const [totalCount, setCount] = useState(10);
-  const [ordering, setOrdering] = useState('');
-  const [search, setSearch] = useState('');
-
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
-
+  const [totalPageCount, setTotalPageCount] = useState(0);
+  
   const history = useHistory();
   const baseURL = '../server/api/records';
   const status = props.match.params.status;
   const dispatch = useDispatch();
   let url = `../server/api/${reader}/records`;
-  
-  function displayList(filter){     
-    if (recordsList && recordsList.length){
-      return recordsList.map((record)=>{
-        var deadline_issue = new Date(record.issue_date)
-        var classVar = "";
-        deadline_issue.setDate(deadline_issue.getDate() + record.issue_period_weeks * 7)
-        deadline_issue = deadline_issue.toString()
-        
-        if(!localStorage.getItem('isStaff') && localStorage.getItem('name')){
-          if (new Date() > new Date(deadline_issue) && !record.return_date){
-            dispatch(createNotification([`You have missed deadline for returning book "${record.book.title}". Please return it`, 'warning']));
-            classVar = "text-danger";
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Reader",
+        accessor: "reader",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <NavLink to={'/recordsList/' + props.row.original.reader} >{props.row.original.reader}</NavLink>
+            );
           }
-          else if (new Date(deadline_issue).setHours(0,0,0,0) === new Date().setHours(0,0,0,0) && !record.return_date){
-            dispatch(createNotification([`Deadline for issued book "${record.book.title}" is today. Please return it`, 'warning']));
-            classVar = "text-warning";
+      },
+      {
+        Header: "Title",
+        accessor: "book.title",
+        Filter: false,
+        Cell: (props) => {
+          return(
+          <NavLink to={`/bookDetails/${props.row.original.book.title}`}>{props.row.original.book.title}</NavLink>);
           }
-          if (record.fine > 0 && record.fine_status !== 'paid'){
-            dispatch(createNotification([`You have pending fine for late returning "${record.book.title}". Please pay it`, 'error']));
-            classVar = "bg-warning";  
+      },
+      {
+        Header: "Cover",
+        accessor: "book.cover",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <img style={{width: 175, height: 175}} className='tc br3' alt='No Pic found' src={ props.row.original.book.cover } />
+            );
           }
-        }
-
-        return(         
-          <tr class={classVar}>
-            <td><NavLink to={'/recordsList/' + record.reader} >{record.reader}</NavLink></td>
-            <td className='title'>{record.book.title}</td>
-            <td><img style={{width: 175, height: 175}} className='tc br3' alt='none' src={ record.book.cover } /></td>
-            <td>{new Date(record.issue_date).toString()}</td>
-            <td className='deadline'>{deadline_issue}</td>
-            {record.return_date &&
-              <td className='return'>{new Date(record.return_date).toString()}</td>
-            }
-            {!record.return_date &&
-              <td className='notReturn'>Not Returned</td>
-            }
-            <td>{record.fine}</td>
-            <td className='fine-status'>{record.fine_status}</td>
-            {localStorage.getItem('isStaff') && !record.return_date && (
+      },
+      {
+        Header: "Issue Date",
+        accessor: "issue_date",
+        Filter: false,
+        Cell: (props) => {
+          
+          return(
             <p>
+            {new Date(props.row.original.issue_date).toString()}
+            </p>
+            );
+          }
+      },
+      {
+        Header: "Deadline",
+        accessor: "deadline",
+        Filter: false,
+        Cell: (props) => {
+          var deadline_issue = new Date(props.row.original.issue_date)
+        deadline_issue.setDate(deadline_issue.getDate() + props.row.original.issue_period_weeks * 7)
+        deadline_issue = deadline_issue.toString()
+          return(
+            <p>
+            {deadline_issue}
+            </p>
+            );
+          }
+      },
+      
+      {
+        Header: "Return Date",
+        accessor: "return_date",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <div>
+            {props.row.original.return_date &&
+              <p className='return'>{new Date(props.row.original.return_date).toString()}</p>
+            }
+            {!props.row.original.return_date &&
+              <p className='notReturn'>Not Returned</p>
+            }
+            </div>
+            );
+          }
+      },
+      {
+        Header: "Fine",
+        accessor: "fine",
+        Filter: false,
+      },
+      {
+        Header: "Fine Status",
+        accessor: "fine_status",
+        Filter: false,
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+        Filter: false,
+        Cell: (props) => {
+          let record = props.row.original
+          return(
+            <div>
+            {localStorage.getItem('isStaff') && !record.return_date && (
               <button
                 class="btn btn-rounded btn-brown"
                 style={{fontSize: '13px'}}
@@ -95,11 +146,10 @@ export function RecordsList(props) {
                 <i class="fas fa-redo pr-2" aria-hidden="true"></i>
                 Return Book
               </button>
-            </p>
+            
             )}
             {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status==='pending' && (
-            <p>
-              <button
+            <button
                 className='btn far fa-money-bill-alt'
                 onClick={() => {
                   axios
@@ -119,94 +169,26 @@ export function RecordsList(props) {
                 Pay Fine
               </button>
               
-            </p>
             )}
-          </tr>            
-        )
-    })}
-  }
+            </div>
+            );
+          }
+      },
+    ],
+    []
+  )
 
-  function filter2 (event) {
-    let item = event.target.value;
-    var titles;
-    if (item==='overdue'){
-      titles = document.getElementsByClassName("deadline");
-      for (var i=0 ; i<titles.length ;  i++){
-        if (new Date(titles[i].textContent)< new Date() && titles[i].nextSibling.className === 'notReturn'){
-          titles[i].parentElement.style.display = ""
-        }
-        else
-          titles[i].parentElement.style.display = "none"  
-      }
+  function fetchData({pageSize, pageIndex, sortBy, globalFilter}){
+    setLoading(true)
+    let ordering ;
+    if (sortBy[0]){
+      ordering = sortBy[0].desc ? '-': '';
+      if(sortBy[0].id=='reader')
+        ordering += 'reader__username'
+      else
+        ordering += sortBy[0].id
+      ordering = ordering.replace('.', '__')
     }
-    else if (item==='pending'){
-      titles = document.getElementsByClassName("deadline");
-      for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].nextSibling.className === 'return'){
-          titles[i].parentElement.style.display = "none"
-        }
-        else
-          titles[i].parentElement.style.display = ""  
-      }
-    }
-    else if (item==='returned'){
-      titles = document.getElementsByClassName("deadline");
-      for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].nextSibling.className === 'notReturn'){
-          titles[i].parentElement.style.display = "none"
-        }
-        else
-          titles[i].parentElement.style.display = ""  
-      }  
-    }
-    else if (item==='fine-pending'){
-      titles = document.getElementsByClassName("fine-status");
-      for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].textContent !== 'pending'){
-          titles[i].parentElement.style.display = "none"
-        }
-        else
-          titles[i].parentElement.style.display = ""  
-      }  
-    }
-    else if (item==='fine-paid'){
-      titles = document.getElementsByClassName("fine-status");
-      for (var i=0 ; i<titles.length ;  i++){
-        if (titles[i].textContent !== 'paid'){
-          titles[i].parentElement.style.display = "none"
-        }
-        else
-          titles[i].parentElement.style.display = ""  
-      } 
-    }
-    else if (item==='All'){
-      titles = document.getElementsByTagName("tr");
-      for (var i=0 ; i<titles.length ;  i++){
-          titles[i].style.display = ""  
-      } 
-    }
-  }
-
-  function filter(item){
-    setCount(1)
-    setSearch(item)
-  }
-
-  function switchOrdering(item){
-    if (item.includes('-'))
-      setOrdering(item.replace('-', ''))
-    else
-      setOrdering('-' + item)
-  }
-
-  function orderBy(item){
-    if (ordering.includes(item))
-      switchOrdering(ordering);
-    else
-      setOrdering(item);
-  }
-  
-  useEffect(() => {
     if (!reader || reader==='All'){
       url = baseURL;
     }
@@ -214,49 +196,32 @@ export function RecordsList(props) {
       url += `/${status}`
     }
     axios
-    .get(url, {params: {page: page, search: search, ordering: ordering}})
+    .get(url, {params: {page: pageIndex+1, search: globalFilter, ordering: ordering, page_size: pageSize}})
     .then(res => {
       setCount(res.data.total_pages);
       setRecordsList(res.data.results);
+      setTotalPageCount(res.data.count)
+      setLoading(false)
     })
     .catch( (error) => dispatch(createNotification([error.message, 'error'])))
-  }, [reader, page, search, ordering])
-  
+  }
+
   return (
     <div class='bookList'>
       <h1>{reader} Records List</h1>
-      <SearchField 
-        placeholder='e.g field1 field2 field3'
-        onChange={filter}
-      />
-      <select class="form-select" onChange={filter2.bind(this)} id="filter" aria-label="Default select example">
-        <option value="All" selected>All</option>
-        <option value='fine-pending'>Fine Pending</option>
-        <option value='fine-paid'>Fine Paid</option>
-        <option value='overdue'>Books Overdue</option>
-        <option value='pending'>Books Pending</option>
-        <option value='returned'>Books Returned</option>
-      </select>
       <hr/>
-      <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th onClick={() => orderBy('reader__username')}>Reader</th>
-              <th onClick={() =>orderBy('book__title')}>Book Title</th>
-              <th>Book Cover</th>
-              <th onClick={() =>orderBy('issue_date')}>Issue Date</th>
-              <th>Deadline</th>
-              <th onClick={() =>orderBy('return_date')}>Returned Date</th>
-              <th onClick={() =>orderBy('fine')}>Fine</th>
-              <th onClick={() =>orderBy('fine_status')}>Fine Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayList()}
-          </tbody>
-        </Table>
-        <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
+      <Container style={{ marginTop: 100 }}>
+        <TableContainer
+          columns={columns}
+          data={recordsList}
+          fetchData={fetchData}
+          loading={loading}
+          pageCount={totalCount}
+          totalPageCount={totalPageCount}
+          filter_user={reader}
+          filter_category={status}
+        />
+      </Container>
     </div>
   )
 }
