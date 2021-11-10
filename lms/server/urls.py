@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/book/<int:pk>/edit', views.BooksDetail.as_view(), name='post_edit'),
     path('api/book/<int:pk>', views.BooksDetail.as_view(), name='post_detail'),
     path('api/books/create', views.BooksList.as_view(), name='post_new'),
+    path('api/authors', views.AuthorList.as_view(), name='author_list'),
     path('api/users', views.UsersList.as_view(), name='user_list'),
     path('api/user/<int:pk>/delete', views.UserDetail.as_view(), name='user_delete'),
     path('api/user/<int:pk>/edit', views.UserDetail.as_view(), name='user_edit'),

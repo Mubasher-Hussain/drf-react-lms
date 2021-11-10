@@ -23,9 +23,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from server.models import Book, Record, Request
+from server.models import Book, Record, Request, Author
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable, IsAdmin
-from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer
+from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer, AuthorSerializer
 
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
@@ -55,7 +55,7 @@ class BooksList(generics.ListCreateAPIView):
     queryset = Book.objects.all().order_by('title')
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     ordering_fields = ['title', 'id', 'author', 'category', 'quantity', 'published_on']
-    search_fields = ['title', 'author', 'category', 'published_on']
+    search_fields = ['id','title', 'author__name', 'category', 'published_on']
     pagination_class = CustomPagination
     serializer_class = BooksSerializer
     def get_queryset(self):
@@ -82,7 +82,7 @@ class RecordList(generics.ListCreateAPIView):
     serializer_class = RecordSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     ordering_fields = ['book__title', 'reader__username', 'fine_status', 'issue_date', 'return_date', 'fine']
-    search_fields = [ 'reader__username', 'fine_status', 'book__title', 'issue_date', 'return_date', 'fine']
+    search_fields = [ 'id', 'reader__username', 'fine_status', 'book__title', 'issue_date', 'return_date', 'fine']
     pagination_class = CustomPagination
     def get_queryset(self):
         """For displaying records of specific reader if reader is specified in url"""
@@ -176,6 +176,13 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RequestSerializer
 
 
+class AuthorList(generics.ListAPIView):
+    """Lists all authors"""
+    permission_classes = [IsStaffOrReadOnly]
+    queryset = Author.objects.all().order_by('name')
+    serializer_class = AuthorSerializer
+   
+
 class UsersList(generics.ListAPIView):
     """Lists all users"""
     permission_classes = [IsStaffOrSelfReadOnly]
@@ -184,7 +191,8 @@ class UsersList(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email']
     pagination_class = CustomPagination
-    
+
+
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update or delete user"""
@@ -248,7 +256,6 @@ def stats(request, reader=None):
     return JsonResponse(output)
 
 
-@api_view(['POST'])
 def register_reader(request):
     """For registering of normal readers"""
     body = json.loads(request.body)

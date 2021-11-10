@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Book, Record, Request
+from .models import Book, Record, Request, Author
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -22,7 +22,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class BooksSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ('id', 'cover', 'title', 'summary', 'author', 'published_on', 'category', 'quantity')
+        fields = ('id', 'cover', 'title', 'summary', 'author', 'published_on', 'category', 'quantity', 'isbn', 'language_code', 'publisher')
 
 
 class RecordSerializer(serializers.ModelSerializer):
@@ -53,3 +53,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'id', 'date_joined')
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ('name', 'id')
