@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/user/<int:pk>/edit', views.UserDetail.as_view(), name='user_edit'),
     path('api/user/<int:pk>', views.UserDetail.as_view(), name='user_detail'),
     path('api/register/reader/', views.register_reader, name="register"),
+    path('activate/<uidb64>/<token>/',views.activate, name='activate'),
     path('api/register/librarian/', views.RegisterLibrarian.as_view(), name="registerlib"),
     path('api/token/obtain/', views.ObtainTokenPairWithUserType.as_view(), name='token_create'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),

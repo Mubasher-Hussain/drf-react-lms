@@ -8,9 +8,15 @@ from channels.layers import get_channel_layer
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db.models import Sum, Count
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 
@@ -27,10 +33,11 @@ from server.models import Book, Record, Request, Author
 from server.permissions import IsStaffOrReadOnly, IsStaffOrSelfReadOnly, IsStaffOrReaderOnly, IsUniqueOrStaffOnly, IsBookAvailable, IsAdmin
 from server.serializers import BooksSerializer, RecordSerializer, RequestSerializer, UserSerializer, MyTokenObtainPairSerializer, AuthorSerializer
 
+
 # Serve Single Page Application
 index = never_cache(TemplateView.as_view(template_name='index.html'))
 redis_instance = redis.StrictRedis(host=settings.REDIS_HOST,
-                                  port=settings.REDIS_PORT, charset="utf-8", decode_responses=True, db=0)
+                                  port=settings.REDIS_PORT, encoding="utf-8", decode_responses=True, db=0)
 
 
 class CustomPagination(PageNumberPagination):
@@ -261,10 +268,36 @@ def register_reader(request):
     body = json.loads(request.body)
     try:
         user = User.objects.create_user(body['username'], body['email'], body['password'])
-        send_mail('Registered', 'You have been successfully registered.', 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
-        return JsonResponse({'success': "Registered as normal User."})
-    except:
+        user.is_active = False
+        user.save()
+        current_site = get_current_site(request)
+        mail_subject = 'Activate your account.'
+        message = render_to_string('acc_activation.html', {
+            'user': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': default_token_generator.make_token(user),
+        })
+        send_mail(mail_subject, message, 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
+        return JsonResponse({'success': "Registered as normal User. Please activate your account from link in you mail"})
+    except Exception as e:
+        print(e)
         return JsonResponse({'error': "Username or Email already exists"})
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        send_mail('Account Activated', 'Your account is activated.', 'mubasherhussain3293@gmail.com', [user.email], fail_silently=True)
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 
 @api_view(['POST'])

@@ -52,7 +52,7 @@ class RequestSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'id', 'date_joined')
+        fields = ('username', 'email', 'id', 'date_joined', 'is_active')
 
 
 class AuthorSerializer(serializers.ModelSerializer):
