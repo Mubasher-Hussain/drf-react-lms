@@ -9,6 +9,7 @@ from django.shortcuts import render
 app_name = 'server'
 
 urlpatterns = [
+    path('api/notify', views.print_channel, name='channel_list'),
     path('api/books', views.BooksList.as_view(), name='post_list'),
     path('api/<str:author>/books', views.BooksList.as_view(), name='post_list_author'),
     path('api/books/categories', views.get_categories, name='categories'),

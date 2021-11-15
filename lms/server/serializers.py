@@ -9,6 +9,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super(MyTokenObtainPairSerializer, self).validate(attrs)
         data.update({'User': 'staff' if self.user.is_staff else 'reader'})
         data.update({'id': self.user.id})
+        data.update({'admin': 'yes' if self.user.is_superuser else ''})
         return data
 
     @classmethod
