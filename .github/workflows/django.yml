@@ -27,4 +27,4 @@ jobs:
         pip install -r lms/requirements.txt
     - name: Run Tests
       run: |
-        python lms/manage.py test lms/
+        pytest lms
