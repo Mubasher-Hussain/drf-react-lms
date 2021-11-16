@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Book, Record, Request, Author
+from .models import Book, Record, Request, Author, Rating
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -20,9 +20,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class BooksSerializer(serializers.ModelSerializer):
+    avg_rating = serializers.ReadOnlyField()
+    total_reviewers = serializers.ReadOnlyField()
     class Meta:
         model = Book
-        fields = ('id', 'cover', 'title', 'summary', 'author', 'published_on', 'category', 'quantity', 'isbn', 'language_code', 'publisher')
+        fields = ('id', 'cover', 'title', 'summary', 'author', 'published_on', 'category', 'quantity', 'isbn', 'language_code', 'publisher', 'avg_rating', 'total_reviewers', 'help')
 
 
 class RecordSerializer(serializers.ModelSerializer):
@@ -47,6 +49,13 @@ class RequestSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         response['book'] = BooksSerializer(instance.book).data
         return response
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    reader = serializers.ReadOnlyField(source='reader.username')
+    class Meta:
+        model = Rating
+        fields = ('id', 'reader', 'book', 'rating')
 
 
 class UserSerializer(serializers.ModelSerializer):
