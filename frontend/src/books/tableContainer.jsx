@@ -1,8 +1,9 @@
 // TableContainer.js
 import React, { useEffect, useState } from "react"
 import { useTable, usePagination, useSortBy, useAsyncDebounce, useGlobalFilter, useFilters } from "react-table"
-import {Table} from 'reactstrap'
+import {Table} from 'react-bootstrap'
 import Pagination from "@mui/material/Pagination"
+import "bootstrap/dist/css/bootstrap.min.css"
 
 
 function GlobalFilter({
@@ -26,6 +27,7 @@ function GlobalFilter({
         style={{
           fontSize: '1.1rem',
           border: '0',
+          width: '100%',
         }}
       />
     </span>

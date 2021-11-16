@@ -14,6 +14,7 @@ import { NavLink, useHistory } from 'react-router-dom';
 
 import axios from "../auth/axiosConfig";
 import { logout, useAuth } from "../auth";
+import "bootstrap/dist/css/bootstrap.min.css"
 
 
 export function Sidebar (props) {
@@ -24,7 +25,7 @@ export function Sidebar (props) {
   function serverLogout() {
     axios
     .post('server/api/logout/', {"refresh_token": localStorage.getItem("refresh_token")})
-    .then(() =>{
+    .finally(() =>{
       logout();
       dispatch(createNotification(['Logged Out', 'success']));
       localStorage.removeItem('isStaff');
