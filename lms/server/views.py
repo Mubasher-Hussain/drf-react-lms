@@ -401,12 +401,13 @@ def print_channel(request):
 
 
 def send_notif(message, recipient):
-    channel_layer = get_channel_layer()
-    channel = redis_instance.get(recipient)
-    if channel:
+    try:
+        channel_layer = get_channel_layer()
+        channel = redis_instance.get(recipient)
         AsyncToSync(channel_layer.send)(channel, {
             "type": "notify.user",
             "text": message,
         })
         return True
-    return False
+    except:
+        return False

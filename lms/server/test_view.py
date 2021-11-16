@@ -121,9 +121,8 @@ class ViewsTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
         book = Book.objects.create(title='titled', summary='summary123', author=Author.objects.create(name='auth1'))
         response = self.client.get('/server/api/book/1')
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['title'], 'titled')
+        self.assertEqual(response.json()['book']['title'], 'titled')
     
     def test_request_create(self):
         user = User.objects.create_user(username='mhussain', password='123')
