@@ -12,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator, PasswordResetTok
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.db.models import Sum, Count, Avg
+from django.db.models.functions import TruncDate
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string, get_template
@@ -300,14 +301,29 @@ def get_categories(request):
 
 @api_view(['GET'])
 def book_graph(request, reader=None):    
-    output = {}
+    book_issued_count = []
+    book_issued_daily = []
+    filter = ''
+    
+    if (request.query_params.get('date')):
+        filter = request.query_params.get('date')[:-3]
+    
     if reader:
-        data = Record.objects.filter(reader=reader).values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
+        record_daily = Record.objects.filter(reader=reader).annotate(issue_date_only = TruncDate('issue_date')).values('issue_date_only').annotate(books_issued=Count('issue_date_only'))[:5]
+        data = Record.objects.filter(reader=reader, issue_date__icontains=filter).values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
     else:
-        data = Record.objects.values('book').annotate(books_issued=Count('issue_date')).order_by('-books_issued')
+        record_daily = Record.objects.all().annotate(issue_date_only = TruncDate('issue_date')).values('issue_date_only').annotate(books_issued=Count('issue_date_only'))[:5]
+        data = Record.objects.filter(issue_date__icontains=filter).values('book').annotate(books_issued=Count('issue_date'), avg_ratings=Avg('book__rating__rating')).order_by('-books_issued')[:5]
+    
     for obj in list(data):
-        output[obj['book']] = obj['books_issued']
-    return JsonResponse(output)
+        book_issued_count.append({'argument': obj['book'], 'value': obj['books_issued']})
+
+    for obj in list(record_daily):
+        book_issued_daily.append({'argument': obj['issue_date_only'].strftime('%Y-%m-%d'), 'value': obj['books_issued']})
+
+    popular_books = Book.objects.all().annotate(avg_ratings=Avg('rating__rating')).order_by('-avg_ratings')[:5]
+    popular_books = BooksSerializer(popular_books, many=True).data
+    return JsonResponse({'book_issued_count': book_issued_count, 'popular_books': popular_books, 'book_issued_daily': book_issued_daily})
 
 
 @api_view(['GET'])
