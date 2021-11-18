@@ -62,7 +62,9 @@ export function Sidebar (props) {
             <NavLink exact to="/home" activeClassName="activeClicked">
               <CDBSidebarMenuItem icon="columns">Home</CDBSidebarMenuItem>
             </NavLink>
-
+            <NavLink exact to="/dashboard" activeClassName="activeClicked">
+              <CDBSidebarMenuItem icon="chart-line">Dashboard</CDBSidebarMenuItem>
+            </NavLink>
             <NavLink exact to="/booksList/All" activeClassName="activeClicked">
               <CDBSidebarMenuItem icon="table">Books List</CDBSidebarMenuItem>
             </NavLink>
@@ -96,14 +98,6 @@ export function Sidebar (props) {
                 <CDBSidebarMenuItem icon="user">Profile</CDBSidebarMenuItem>
               }
             </NavLink>
-            
-            <NavLink exact to="/analysis" activeClassName="activeClicked">
-              {isStaff && 
-                <CDBSidebarMenuItem icon="chart-line">
-                  Analytics
-                </CDBSidebarMenuItem>
-              }
-            </NavLink> 
 
             <NavLink exact to={`/requestsList/${localStorage.getItem('name')}`} activeClassName="activeClicked">
               {!isStaff && logged &&

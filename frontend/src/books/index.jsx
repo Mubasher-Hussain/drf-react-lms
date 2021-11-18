@@ -11,3 +11,4 @@ export { Sidebar } from './sidebar';
 export { Analysis } from './analysis';
 export { Home } from './home';
 export { TableContainer } from './tableContainer';
+export { Dashboard } from './dashboard';

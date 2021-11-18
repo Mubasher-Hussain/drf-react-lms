@@ -35,7 +35,7 @@ export function UsersList() {
             <td>{user.is_active ? "Yes" : "No"}</td>
             <td>{new Date(user.date_joined).toString()}</td>
             <td>
-              <span class="badge"><NavLink to={'/analysis/' + user.username} >Analysis</NavLink></span>
+              <span class="badge"><NavLink to={'/dashboard/' + user.username} >Analysis</NavLink></span>
               <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
               <span class="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
             </td>

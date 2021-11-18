@@ -65,7 +65,7 @@ export function RecordsList(props) {
           
           return(
             <p>
-            {new Date(props.row.original.issue_date).toString()}
+            {new Date(props.row.original.issue_date).toString().substring(0,24)}
             </p>
             );
           }
@@ -77,7 +77,7 @@ export function RecordsList(props) {
         Cell: (props) => {
           var deadline_issue = new Date(props.row.original.issue_date)
         deadline_issue.setDate(deadline_issue.getDate() + props.row.original.issue_period_weeks * 7)
-        deadline_issue = deadline_issue.toString()
+        deadline_issue = deadline_issue.toString().substring(0,24)
           return(
             <p>
             {deadline_issue}
@@ -94,7 +94,7 @@ export function RecordsList(props) {
           return(
             <div>
             {props.row.original.return_date &&
-              <p className='return'>{new Date(props.row.original.return_date).toString()}</p>
+              <p className='return'>{new Date(props.row.original.return_date).toString().substring(0,24)}</p>
             }
             {!props.row.original.return_date &&
               <p className='notReturn'>Not Returned</p>

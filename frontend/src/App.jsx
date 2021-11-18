@@ -10,7 +10,7 @@ import {
 import { createNotification, changeState, setRef } from './reduxStore/appSlice'
 import "./App.scss";
 import { Login, Register, AddStaff, SetPass } from "./login/index";
-import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
+import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Dashboard } from "./books";
 import { InjectAxiosInterceptors } from "./auth/axiosConfig";
 
 import NotificationSystem from 'react-notification-system';
@@ -70,52 +70,50 @@ function App (){
           <Route
             exact path="/requestsList/:reader?/:status?"
             children={({match}) => (
-              <RequestsList createNotification={createNotification} match={match} />
+              <RequestsList match={match} />
             )}
           />
           <Route
             exact path="/recordsList/:reader?/:status?"
             children={({match}) => (
-              <RecordsList createNotification={createNotification} match={match} />
+              <RecordsList match={match} />
             )}
           />
           <Route
-            exact path="/analysis/:reader?/:status?"
+            exact path="/dashboard/:reader?/:status?"
             children={({match}) => (
-              <Analysis createNotification={createNotification} match={match} />
+              <Dashboard match={match} />
             )}
           />
           <Route
             exact path="/bookDetails/:pk"
             children={({match}) => (
-              <BookDetails createNotification={createNotification} match={match} />
+              <BookDetails match={match} />
             )}
           />
           <Route
             exact path="/userDetails/:pk"
             children={({match}) => (
-              <UserDetails createNotification={createNotification} match={match} />
+              <UserDetails match={match} />
             )}
           />
           <PrivateRoute
             path="/createBook"
-            createNotification={createNotification}
             component={NewBook}
           />
           <PrivateRoute
             path="/editBook/:pk"
-            createNotification={createNotification}
             component={EditBook} 
           />
           <Route path="/login">
             <div className="login">
               <div className="container">
                 {isLogginActive && (
-                  <Login createNotification={createNotification}
+                  <Login 
                   />
                 )}
                 {!isLogginActive && (
-                  <Register createNotification={createNotification}  />
+                  <Register   />
                 )}
               </div>
               <RightSide
