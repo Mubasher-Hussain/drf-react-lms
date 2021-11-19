@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from rest_framework.test import APIClient
 
-from .models import Book, Record, Request
+from .models import Book, Record, Request, Author
 
 class PermissionTest(TestCase):
     """Each test is independant and database is empty for each test"""
@@ -20,6 +20,7 @@ class PermissionTest(TestCase):
         User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
+        author=Author.objects.create(name='mhussain')
         response_staff = self.client.post('/server/api/books/create', {'summary': 'tent', 'title': 'builder', 'author': 'mhussain'})
         
         User.objects.create_user(username='mhussain2', password='123')
@@ -35,13 +36,13 @@ class PermissionTest(TestCase):
         User.objects.create_user(username='mhussain2', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain2', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book_user = Book.objects.create(id=1234, title='titled2', summary='summary123')
+        book_user = Book.objects.create(id=1234, title='titled2', summary='summary123', author=Author.objects.create(name='auth'))
         response_user = self.client.delete('/server/api/book/1234/delete')
         
         User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book_staff = Book.objects.create(id=123, title='titled', summary='summary123')
+        book_staff = Book.objects.create(id=123, title='titled', summary='summary123', author=Author.objects.create(name='auth1'))
         response_staff = self.client.delete('/server/api/book/123/delete')
         
         # Also confirms if book is deleted
@@ -56,7 +57,8 @@ class PermissionTest(TestCase):
         User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        Book.objects.create(id=123, title='titled', summary='summary123', author='mhussain')
+        Author.objects.create(name='mhussain')
+        Book.objects.create(id=123, title='titled', summary='summary123', author=Author.objects.create(name='auth'))
         data= {'title': 'editedTitle', 'summary': 'editsummary', 'author': 'mhussain'}
         response_staff = self.client.put('/server/api/book/123/edit', data)
         
@@ -78,7 +80,7 @@ class PermissionTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         self.client.post('/server/api/requests/create', {'book': 'book1'})
         response_user = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
         
@@ -86,7 +88,7 @@ class PermissionTest(TestCase):
         token = self.client.post('/server/api/token/obtain/', {'username':'mubashir', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
         
-        response_staff = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
+        response_staff = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain', 'issue_period_weeks': 1})
         
         self.assertEqual(response_staff.status_code, 201)
         self.assertEqual(response_user.status_code, 403)
@@ -95,7 +97,7 @@ class PermissionTest(TestCase):
         """Only Staff can return book by editing record return date"""
         user = User.objects.create_user(username='mhussain', password='123')
         self.client.login(username='mhussain', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         Request.objects.create(book=book, reader=auth.get_user(self.client))
         Record.objects.create(book=book, reader=user)
         time = timezone.localtime(timezone.now() + datetime.timedelta(days=8, milliseconds=100))
@@ -118,7 +120,7 @@ class PermissionTest(TestCase):
         """Normal Users can only access their own records. Staff can access any record"""
         user1 = User.objects.create_user(username='mhussain', password='123')
         user2 = User.objects.create_user(username='mhussain2', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         
         self.client.login(username='mhussain', password='123')
         Request.objects.create(book=book, reader=auth.get_user(self.client))
@@ -161,8 +163,8 @@ class PermissionTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        Book.objects.create(id=123, title='book1', summary='summary123')
-        Book.objects.create(id=1234, title='book2', summary='summary123')
+        Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
+        Book.objects.create(id=1234, title='book2', summary='summary123', author=Author.objects.create(name='auth1'))
         response1 = self.client.post('/server/api/requests/create', {'book': 'book1'})
         response2 = self.client.post('/server/api/requests/create', {'book': 'book2'})
         response1_duplicate = self.client.post('/server/api/requests/create', {'book': 'book1'})
@@ -175,7 +177,7 @@ class PermissionTest(TestCase):
         """Only Staff can edit requests"""
         user = User.objects.create_user(username='mhussain', password='123')
         self.client.login(username='mhussain', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         Request.objects.create(id=1234, book=book, reader=auth.get_user(self.client))
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
@@ -194,7 +196,7 @@ class PermissionTest(TestCase):
         """Normal Users can only access their own requests. Staff can access any request"""
         user1 = User.objects.create_user(username='mhussain', password='123')
         user2 = User.objects.create_user(username='mhussain2', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         
         self.client.login(username='mhussain', password='123')
         Request.objects.create(book=book, reader=auth.get_user(self.client))

@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from rest_framework.test import APIClient
 
-from .models import Book, Record, Request
+from .models import Book, Record, Request,Author
 
 class ViewsTest(TestCase):
     """Each test is independant and database is empty for each test"""
@@ -20,46 +20,49 @@ class ViewsTest(TestCase):
     def test_books_list(self):
         """Creates User and its two books and retrieve them."""
         user = User.objects.create_user(username='mhussain', password='123')
-        Book.objects.create(title='title', summary='Con')
-        Book.objects.create(title='builder', summary='tent')
+        Book.objects.create(title='title', summary='Con', author=Author.objects.create(name='auth'))
+        Book.objects.create(title='builder', summary='tent', author=Author.objects.create(name='auth1'))
 
         response = self.client.get('/server/api/books')
 
         # Check response status, no of books returned and matches title and summary.
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.json()[0]['title'], 'builder')
-        self.assertEqual(response.json()[0]['summary'], 'tent')
+        self.assertEqual(len(response.json()['results']), 2)
+        self.assertEqual(response.json()['results'][0]['title'], 'builder')
+        self.assertEqual(response.json()['results'][0]['summary'], 'tent')
 
     def test_books_list_author(self):
         """Creates books for two users and retrieves them by author for each user"""
         user1 = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        Book.objects.create(title='body', summary='Con', author='mhussain')
-        Book.objects.create(title='body2', summary='Con2', author='mhussain')
+        auth1 = Author.objects.create(name='mhussain')
+        auth2 = Author.objects.create(name='mubashir')
+        Book.objects.create(title='body', summary='Con', author=auth1)
+        Book.objects.create(title='body2', summary='Con2', author=auth1)
 
-        Book.objects.create(title='builder', summary='tent', author='mubashir')
-        Book.objects.create(title='builder2', summary='tent2', author='mubashir')
+        Book.objects.create(title='builder', summary='tent', author=auth2)
+        Book.objects.create(title='builder2', summary='tent2', author=auth2)
         
         response1 = self.client.get('/server/api/mhussain/books')
         response2 = self.client.get('/server/api/mubashir/books')
         
         # Checks response statuses and confirms author matches.
         self.assertEqual(response1.status_code, 200)
-        self.assertEqual(len(response1.json()), 2)
-        self.assertEqual(response1.json()[0]['author'], 'mhussain')
-        self.assertEqual(response1.json()[1]['author'], 'mhussain')
+        self.assertEqual(len(response1.json()['results']), 2)
+        self.assertEqual(response1.json()['results'][0]['author'], 'mhussain')
+        self.assertEqual(response1.json()['results'][1]['author'], 'mhussain')
         
         self.assertEqual(response2.status_code, 200)
-        self.assertEqual(len(response2.json()), 2)
-        self.assertEqual(response2.json()[0]['author'], 'mubashir')
-        self.assertEqual(response2.json()[1]['author'], 'mubashir')
+        self.assertEqual(len(response2.json()['results']), 2)
+        self.assertEqual(response2.json()['results'][0]['author'], 'mubashir')
+        self.assertEqual(response2.json()['results'][1]['author'], 'mubashir')
 
     def test_books_create(self):
         user = User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
+        Author.objects.create(name='mhussain')
         response = self.client.post('/server/api/books/create', {'summary': 'tent', 'title': 'builder', 'author': 'mhussain'})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['title'], 'builder')
@@ -70,7 +73,7 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(id=123, title='titled', summary='summary123')
+        book = Book.objects.create(id=123, title='titled', summary='summary123', author=Author.objects.create(name='auth'))
         response = self.client.delete('/server/api/book/123/delete')
         # Also confirms if book is deleted
         self.assertEqual(response.status_code, 204)
@@ -80,7 +83,7 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(id=123, title='titled', summary='summary123', author='mhussain')
+        book = Book.objects.create(id=123, title='titled', summary='summary123', author=Author.objects.create(name='mhussain'))
         data= {'title': 'editedTitle', 'summary': 'editsummary', 'author': 'mhussain'}
         response = self.client.put('/server/api/book/123/edit', data)
         # Matches returned query with edited title and summary
@@ -116,7 +119,7 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(title='titled', summary='summary123', author='auth1')
+        book = Book.objects.create(title='titled', summary='summary123', author=Author.objects.create(name='auth1'))
         response = self.client.get('/server/api/book/1')
         
         self.assertEqual(response.status_code, 200)
@@ -126,7 +129,7 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         response = self.client.post('/server/api/requests/create', {'book': 'book1'})
         
         self.assertEqual(response.status_code, 201)
@@ -138,14 +141,14 @@ class ViewsTest(TestCase):
         user = User.objects.create_user(username='mhussain', password='123')
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='auth'))
         self.client.post('/server/api/requests/create', {'book': 'book1'})
         
         staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
         token = self.client.post('/server/api/token/obtain/', {'username':'mubashir', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
         
-        response = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain'})
+        response = self.client.post('/server/api/records/create', {'book': 'book1', 'reader': 'mhussain', 'issue_period_weeks': 1})
         token = self.client.post('/server/api/token/obtain/', {'username':'mhussain', 'password':'123'})
         self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token.data['access'])
         response2 = self.client.get('/server/api/request/1')
@@ -159,7 +162,7 @@ class ViewsTest(TestCase):
     def test_return_book_check_fine(self):
         user = User.objects.create_user(username='mhussain', password='123')
         self.client.login(username='mhussain', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='author'))
         Request.objects.create(book=book, reader=auth.get_user(self.client))
         
         staff = User.objects.create_user(username='mubashir', password='123', is_staff=True)
@@ -194,7 +197,7 @@ class ViewsTest(TestCase):
         """Get user Info including their total fine"""
         user = User.objects.create_user(id=1, username='mhussain', email='a@c.com', password='123')
         self.client.login(username='mhussain', password='123')
-        book = Book.objects.create(id=123, title='book1', summary='summary123')
+        book = Book.objects.create(id=123, title='book1', summary='summary123', author=Author.objects.create(name='mhussain'))
         Record.objects.create(book=book, reader=auth.get_user(self.client), fine=100, fine_status='pending')
         Record.objects.create(book=book, reader=auth.get_user(self.client), fine=200)
                 
