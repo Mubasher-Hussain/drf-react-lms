@@ -6,12 +6,22 @@ import SearchField from 'react-search-field';
 import axios from "../auth/axiosConfig";
 
 import Table from "react-bootstrap/Table";
+import Pagination from "@mui/material/Pagination"
 import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
 
 // Displays All Users or specific by author
 export function UsersList() {
   const [usersList, setUsersList] = useState();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [totalCount, setCount] = useState(10);
+  const [ordering, setOrdering] = useState('');
+  
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
+
   const url = '../server/api/users';
   const dispatch = useDispatch();
   function displayList(filter){     
@@ -33,41 +43,50 @@ export function UsersList() {
     })}
   }
 
-  function search (item) {
-    var users = document.getElementsByClassName("title");
-    for (var i=0 ; i<users.length ;  i++){
-      if (!users[i].textContent.toUpperCase().match(item.toUpperCase())){
-        users[i].parentElement.style.display = "none"
-      }
-      else
-        users[i].parentElement.style.display = ""  
-    }
+  function filter (item) {
+    setCount(1)
+    setSearch(item)
+  }
+
+  function switchOrdering(item){
+    if (item.includes('-'))
+      setOrdering(item.replace('-', ''))
+    else
+      setOrdering('-' + item)
+  }
+
+  function orderBy(item){
+    if (ordering.includes(item))
+      switchOrdering(ordering);
+    else
+      setOrdering(item);
   }
   
   useEffect(() => {  
     axios
-    .get(url)
+    .get(url, {params: {page: page, search: search, ordering: ordering}})
     .then(res => {
-      setUsersList(res.data);
+      setCount(res.data.total_pages);
+      setUsersList(res.data.results);
     })
     .catch( (error) => dispatch(createNotification([error.message, 'error'])))  
-  }, [])
+  }, [page, search, ordering])
   
   return (
     <div class='bookList'>
       <h1>Users List</h1>
       <SearchField 
-        placeholder='Search By Username'
-        onChange={search}
+        placeholder='e.g field1 field2 field3'
+        onChange={filter}
       />
       <hr/>
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Joining Date</th>
+              <th onClick={() => orderBy('id')}>ID</th>
+              <th onClick={() => orderBy('username')}>Username</th>
+              <th onClick={() => orderBy('email')}>Email</th>
+              <th onClick={() => orderBy('date_joined')}>Joining Date</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -75,6 +94,7 @@ export function UsersList() {
             {displayList()}
           </tbody>
         </Table>
+        <Pagination count={totalCount} page={page} color="primary" onChange={handleChange}/>
     </div>
   )
 }

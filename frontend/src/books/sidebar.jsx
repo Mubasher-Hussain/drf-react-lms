@@ -62,7 +62,7 @@ export function Sidebar (props) {
               <CDBSidebarMenuItem icon="columns">Home</CDBSidebarMenuItem>
             </NavLink>
 
-            <NavLink exact to="/booksList" activeClassName="activeClicked">
+            <NavLink exact to="/booksList/All" activeClassName="activeClicked">
               <CDBSidebarMenuItem icon="table">Books List</CDBSidebarMenuItem>
             </NavLink>
             

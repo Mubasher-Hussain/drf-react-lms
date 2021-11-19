@@ -156,13 +156,20 @@ function RegisterButton(props) {
       if (res.data.error){
         dispatch(createNotification([res.data.error, 'error']));
       }
-      else{
+      else if (localStorage.getItem('isAdmin')!='True')
+      {
         dispatch(createNotification([res.data.success, 'success']));
         dispatch(changeState())
         history.push('/');
         history.push('/login');
       }
-    })    
+      else{
+        dispatch(createNotification([res.data.success, 'success']));
+        history.push('/');
+        
+      }
+    })
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))    
   }
 
   return (

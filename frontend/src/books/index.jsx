@@ -10,3 +10,4 @@ export { UsersList } from './userList';
 export { Sidebar } from './sidebar';
 export { Analysis } from './analysis';
 export { Home } from './home';
+export { TableContainer } from './tableContainer';

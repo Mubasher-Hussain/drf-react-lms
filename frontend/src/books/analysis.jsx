@@ -146,7 +146,7 @@ export function Analysis(props) {
     const recordsData = await axios(url);
     const bookGraph = await axios(url2);
     const stats = await axios(url3);
-    setGraphDetails({ records: recordsData.data, bookGraph: bookGraph.data, stats:stats.data})
+    setGraphDetails({ records: recordsData.data.results, bookGraph: bookGraph.data, stats:stats.data})
   
   }, [reader, status])
   
