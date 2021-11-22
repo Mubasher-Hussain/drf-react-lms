@@ -386,7 +386,7 @@ def set_password(request):
 
 @api_view(['POST'])
 def logout_request(request):
-    body = json.loads(request.body)
+    body = request.data
     refresh_token = body["refresh_token"]
     try:
         token = RefreshToken(refresh_token)
