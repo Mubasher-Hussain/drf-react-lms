@@ -1,28 +1,29 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { 
-  useHistory,
-  NavLink } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { NavLink } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
+
+import { createNotification } from "../reduxStore/appSlice";
+import { useDispatch } from "react-redux";
 
 import {TableContainer} from './'
 import { Container } from "reactstrap"
 import {SelectColumnFilter} from "./selectFilter"
+import Rating from '@mui/material/Rating';
+
 import "bootstrap/dist/css/bootstrap.min.css"
 
 // Displays All Books or specific by author
 export function BooksList(props) {
   const author = props.match.params.author;
-  const [authorsList, setAuthorsList] = useState();
   const category = props.match.params.category;
   const [booksList, setBooksList] = useState([]);
   const [loading, setLoading] = useState(false)
   const [totalCount, setCount] = useState(10);
   const [totalPageCount, setTotalPageCount] = useState(0);
-  const history = useHistory();
   const baseURL = '../server/api/books';
   let url = `../server/api/${author}/books`;
-
+  const dispatch = useDispatch()
 
   const columns = useMemo(
     () => [
@@ -35,6 +36,7 @@ export function BooksList(props) {
         Header: "Cover",
         accessor: "cover",
         Filter: false,
+        disableSortBy: true,
         Cell: (props) => {
           return(
             <img style={{width: 175, height: 175}} className='tc br3' alt='No Pic found' src={ props.row.original.cover } />
@@ -83,31 +85,24 @@ export function BooksList(props) {
         accessor: "published_on",
         Filter: false,
       },
+      {
+        Header: "Rating",
+        accessor: "avg_rating",
+        Filter: false,
+        Cell: (props) => {
+          return(
+            <Rating
+              value={props.row.original.avg_rating}
+              precision={0, .1}
+              readOnly
+            />
+            );
+          }
+      },
     ],
     [author]
   )
 
-
-  function filter2(event){
-    let command = event.target.value ;
-    if(author!==command){
-      if(command!=='All')
-        history.push(`./${command}`);
-      else
-        history.push(`./All`);  
-    }
-  }
- 
-  function displayAuthor(){
-    if (authorsList && authorsList.length){
-      return authorsList.map((author) => <option value={author.name}>{author.name}</option>)
-    }
-  }
-  
-  useEffect(async() => {
-    const authorsData = await axios('../server/api/authors');
-    setAuthorsList(authorsData.data)
-  }, [author])
 
   function fetchData({pageSize, pageIndex, sortBy, globalFilter, filters}){
     setLoading(true)
@@ -143,13 +138,13 @@ export function BooksList(props) {
       setTotalPageCount(res.data.count)
       setLoading(false)
     })
-    .catch( (error) => alert(error))
+    .catch( (error) => dispatch(createNotification([error.message, 'error'])))
   }
 
   return (
-    <div class='bookList '>
-      <h1>{author} Books List</h1>
-        <Container style={{ marginTop: 100 }}>
+    <div class='bookList'>
+      <h1>Books Catalogue</h1>
+        <Container>
           <TableContainer
             columns={columns}
             data={booksList}

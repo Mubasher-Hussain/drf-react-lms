@@ -32,9 +32,10 @@ export function UsersList() {
             <td>{user.id}</td>
             <td className='title'><NavLink to={'/userDetails/' + user.id} >{user.username}</NavLink></td>
             <td>{user.email}</td>
+            <td>{user.is_active ? "Yes" : "No"}</td>
             <td>{new Date(user.date_joined).toString()}</td>
             <td>
-              <span class="badge"><NavLink to={'/analysis/' + user.username} >Analysis</NavLink></span>
+              <span class="badge"><NavLink to={'/dashboard/' + user.username} >Analysis</NavLink></span>
               <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
               <span class="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
             </td>
@@ -86,6 +87,7 @@ export function UsersList() {
               <th onClick={() => orderBy('id')}>ID</th>
               <th onClick={() => orderBy('username')}>Username</th>
               <th onClick={() => orderBy('email')}>Email</th>
+              <th onClick={() => orderBy('is_active')}>Is Active</th>
               <th onClick={() => orderBy('date_joined')}>Joining Date</th>
               <th>Actions</th>
             </tr>

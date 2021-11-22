@@ -1,8 +1,10 @@
 // TableContainer.js
 import React, { useEffect, useState } from "react"
 import { useTable, usePagination, useSortBy, useAsyncDebounce, useGlobalFilter, useFilters } from "react-table"
-import {Table} from 'reactstrap'
+import {Table} from 'react-bootstrap'
 import Pagination from "@mui/material/Pagination"
+import "bootstrap/dist/css/bootstrap.min.css"
+import Skeleton from '@mui/material/Skeleton';
 
 
 function GlobalFilter({
@@ -26,6 +28,7 @@ function GlobalFilter({
         style={{
           fontSize: '1.1rem',
           border: '0',
+          width: '100%',
         }}
       />
     </span>
@@ -163,14 +166,19 @@ useEffect(() => {
           return (
             <tr {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                return <td {...cell.getCellProps()}>{loading ? (
+                  <Skeleton />
+                  
+                ) : cell.render("Cell")}</td>
               })}
             </tr>
           )
         })}
         <tr>
             {loading ? (
-              <td colSpan="10000">Loading...</td>
+              <td colSpan="10000">
+              <Skeleton animation="wave" />
+              </td>
             ) : (
               <td colSpan="10000">
                 Showing {page.length} of ~{totalPageCount}{' '}

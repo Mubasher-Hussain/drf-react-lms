@@ -7,7 +7,7 @@
   justify-content: center;
   align-items: center;
   font-family: "Open Sans", sans-serif;
-  
+  flex-direction: row;
 }
 
 .App-logo {
@@ -48,7 +48,7 @@
   height: "auto";
   justify-content: center;
   align-items: center;
-  margin-top: 100px;
+  //margin-top: 100px;
   margin-left: 300px;
   position: relative;
   z-index: 99;
