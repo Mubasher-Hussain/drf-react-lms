@@ -9,10 +9,12 @@ import {
 
 import { createNotification, changeState, setRef } from './reduxStore/appSlice'
 import "./App.scss";
-import { Login, Register } from "./login/index";
+import { Login, Register, AddStaff, SetPass } from "./login/index";
 import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
+import { InjectAxiosInterceptors } from "./auth/axiosConfig";
 
 import NotificationSystem from 'react-notification-system';
+import "bootstrap/dist/css/bootstrap.min.css"
 
 const notificationSystem = React.createRef()
   
@@ -55,13 +57,15 @@ function App (){
   return (
     <Router>
       <div className="App">
+        <InjectAxiosInterceptors />
         <NotificationSystem ref={notificationSystem} />
         <Sidebar createNotification={createNotification}/>
         <Switch>
           <Route exact path='/'><Redirect to='/booksList/All'></Redirect></Route>
           <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
           <Route exact path="/home" component={Home}/>
-          <Route exact path="/addStaff" component={Register}/>
+          <Route exact path="/addStaff" component={AddStaff}/>
+          <Route exact path="/setPassword" component={SetPass}/>
           <Route exact path="/usersList" component={UsersList}/>
           <Route
             exact path="/requestsList/:reader?/:status?"

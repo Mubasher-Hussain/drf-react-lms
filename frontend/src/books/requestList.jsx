@@ -23,12 +23,8 @@ export function RequestsList(props) {
   const [totalCount, setCount] = useState(10);
   const [totalPageCount, setTotalPageCount] = useState(0);
   
-
-
   const history = useHistory();
-  const location = useLocation();
   const baseURL = '../server/api/requests';
-  const status = props.match.params.status;
   const dispatch = useDispatch()
   let url = `../server/api/${reader}/requests`;
 
@@ -50,7 +46,7 @@ export function RequestsList(props) {
         Filter: false,
         Cell: (props) => {
           return(
-          <NavLink to={`/bookDetails/${props.row.original.book.title}`}>{props.row.original.book.title}</NavLink>);
+          <NavLink to={`/bookDetails/${props.row.original.book.id}`}>{props.row.original.book.title}</NavLink>);
           }
       },
       {
@@ -134,40 +130,35 @@ export function RequestsList(props) {
     []
   )
 
-
-  function filter2(event){
-    let command = event.target.value ;
-    if(!status){
-      if (command!=='All')
-        history.push(`${location.pathname}/${command}`);
-    }
-    else if(status!==command){
-      if(command!=='All')
-        history.push(`./${command}`);
-      else
-        history.push(`../${reader}`);  
-    }
-  }
-
   
-  function fetchData({pageSize, pageIndex, sortBy, globalFilter}){
+  function fetchData({pageSize, pageIndex, sortBy, globalFilter, filters}){
     setLoading(true)
-    let ordering ;
+    let ordering, statusFilter, readerFilter ;
+    for (let i=0 ; i<filters.length ; i++){
+      if(filters[i] && filters[i].id=='status')
+        statusFilter = filters[i].value
+      if(filters[i] && filters[i].id=='reader')
+        readerFilter = filters[i].value
+      }
+    
     if (sortBy[0]){
-      ordering = sortBy[0].desc ? '-': '';
-      
+      ordering = sortBy[0].desc ? '-': '';  
       if(sortBy[0].id=='reader')
         ordering += 'reader__username'
       else
         ordering += sortBy[0].id
       ordering = ordering.replace('.', '__')
     }
-    if (!reader || reader==='All'){
+    if (readerFilter){
+      url = `../server/api/${readerFilter}/requests`;
+    }
+    else if (!reader || reader==='All'){
       url = baseURL;
     }
-    if (status){
-      url += `/${status}`
+    if (statusFilter){
+      url+='/'+ statusFilter
     }
+    
     axios
     .get(url, {params: {page: pageIndex+1, search: globalFilter, ordering: ordering, page_size: pageSize}})
     .then(res => {
@@ -179,12 +170,11 @@ export function RequestsList(props) {
     .catch( (error) => dispatch(createNotification([error.message, 'error'])))
   }
 
-
   return (
     <div class='bookList'>
      <h1>{reader} Requests List</h1>
       <hr/>
-      <Container style={{ marginTop: 100 }}>
+      <Container>
         <TableContainer
           columns={columns}
           data={requestsList}
@@ -193,7 +183,6 @@ export function RequestsList(props) {
           pageCount={totalCount}
           totalPageCount={totalPageCount}
           filter_user={reader}
-          filter_category={status}
         />
       </Container>
     </div>

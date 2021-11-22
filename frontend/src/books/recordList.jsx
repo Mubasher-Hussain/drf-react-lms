@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useHistory,
   NavLink,
@@ -44,7 +44,7 @@ export function RecordsList(props) {
         Filter: false,
         Cell: (props) => {
           return(
-          <NavLink to={`/bookDetails/${props.row.original.book.title}`}>{props.row.original.book.title}</NavLink>);
+          <NavLink to={`/bookDetails/${props.row.original.book.id}`}>{props.row.original.book.title}</NavLink>);
           }
       },
       {
@@ -210,7 +210,7 @@ export function RecordsList(props) {
     <div class='bookList'>
       <h1>{reader} Records List</h1>
       <hr/>
-      <Container style={{ marginTop: 100 }}>
+      <Container>
         <TableContainer
           columns={columns}
           data={recordsList}

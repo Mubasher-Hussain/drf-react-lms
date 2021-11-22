@@ -27,7 +27,7 @@ export function UserDetails(props) {
     axios
     .delete(url)
     .then(res => {
-      dispatch(createNotification('User Deleted', 'success'));
+      dispatch(createNotification(['User Deleted', 'success']));
       history.goBack();
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))

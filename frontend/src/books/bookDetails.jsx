@@ -9,23 +9,42 @@ import { useAuth } from "../auth"
 import { changeState } from "../reduxStore/bookSlice";
 import { useDispatch } from "react-redux";
 import { createNotification } from "../reduxStore/appSlice";
+import Rating from '@mui/material/Rating';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
+const labels = {
+  0: 'Pathetic',
+  0.5: 'Useless',
+  1: 'Useless+',
+  1.5: 'Poor',
+  2: 'Poor+',
+  2.5: 'Ok',
+  3: 'Ok+',
+  3.5: 'Good',
+  4: 'Good+',
+  4.5: 'Excellent',
+  5: 'Excellent+',
+};
 
 // Display Details of Book and its comments
 export function BookDetails(props) {
   const pk = props.match.params.pk;
   const history = useHistory();
   const [logged] = useAuth();
-  const [bookDetails, setBookDetails] = useState({ book: null});
+  const [bookDetails, setBookDetails] = useState({ book: null, user_rating: null});
+  const [hover, setHover] = React.useState(-1);
+  const [newRating, setNewRating] = React.useState();
   const dispatch = useDispatch()
   useEffect(async() => {
     const bookData = await axios(
       `server/api/book/${pk}`
     );
+    //alert(JSON.stringify(bookData))
     if (!localStorage.getItem('isStaff') && bookData.data.quantity==0)
       dispatch(createNotification(['Book is currently unavailable now. You can still request for issue but it will only be accepted when book is available', 'warning']))
-    setBookDetails({ book: bookData.data})
-  
+    setNewRating(bookData.data.user_rating)
+    setBookDetails({ book: bookData.data.book, user_rating: bookData.data.user_rating})
   }, [])
   
   function deleteBook(){
@@ -37,6 +56,21 @@ export function BookDetails(props) {
       history.goBack();
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Either Unauthorised or Empty Field', 'error'])))
+  }
+  
+  function rateBook(){
+    let url = `server/api/book/updateRating`;
+    let url2 = `server/api/book/createRating`;
+    let baseURL = bookDetails.user_rating==null ? url2: url;
+    let rating = newRating==null ? 0: newRating
+    axios
+    .post(baseURL, {rating: rating, book: bookDetails.book.title})
+    .then(res => {
+      dispatch(createNotification(['Book Rated', 'success']));
+      history.push('/');
+      history.goBack();
+    })
+    .catch((error) => dispatch(createNotification([error.message + '.Either Unauthorised or Empty Field', 'error'])))
   }
   
   function displayDetail(){
@@ -67,10 +101,42 @@ export function BookDetails(props) {
                   </NavLink>
                 </div>
                 <hr />
+                <Typography component="legend">Book Rating:</Typography>
+                <Rating
+                    value={bookDetails.book.avg_rating}
+                    precision={0, .1}
+                    readOnly
+                  />
+                  <label>({bookDetails.book.total_reviewers} Reviewers)</label>
+                <hr/>
+                {!localStorage.getItem('isStaff') && localStorage.getItem('name') &&
+                <Box>
+                  <Typography component="legend">Your Rating:</Typography>
+                  <Rating
+                    name="hover-feedback"
+                    value={newRating}
+                    defaultValue={newRating}
+                    precision={0, .5}
+                    onChange={(event, newValue) => {
+                      setNewRating(newValue);
+                    }}
+                    onChangeActive={(event, newHover) => {
+                      setHover(newHover);
+                    }}
+                  />
+                  {newRating !== null && (
+                    <Box sx={{ ml: 2 }}>{labels[hover !== -1 ? hover : newRating]}</Box>
+                  )}
+                  <button type="button" className="btn-primary" onClick={rateBook}>
+                    Submit Rating
+                  </button>
+                </Box>
+                }
+                <hr/>
                 <div class="controls">
                   {localStorage.getItem('isStaff') && (
                     <p>
-                      <button className='btn' onClick={() => {
+                      <button className='btn-primary' onClick={() => {
                         dispatch(changeState({title: bookDetails.book.title,
                           summary: bookDetails.book.summary,
                           author: bookDetails.book.author,
@@ -84,7 +150,7 @@ export function BookDetails(props) {
                                       }>
                         Edit
                       </button>
-                      <button type="button" className="btn" onClick={deleteBook}>
+                      <button type="button" className="btn-primary" onClick={deleteBook}>
                       Delete
                       </button>
                     </p>
