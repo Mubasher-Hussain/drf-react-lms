@@ -69,17 +69,18 @@ class BooksList(generics.ListCreateAPIView):
     pagination_class = CustomPagination
     def get_queryset(self):
         """For displaying author specific posts if author is specified in url"""
-        qp  = self.request.query_params
-        qset = Book.objects.all().order_by('title')
+        query_parameters  = self.request.query_params
+        book_queryset = Book.objects.all().order_by('title')
             
         if self.kwargs:
             try:
-                qset = Book.objects.filter(**self.kwargs).order_by('title')
+                book_queryset = Book.objects.filter(**self.kwargs).order_by('title')
             except Book.DoesNotExist:
                 print('Author not found')
-        if 'ordering' in qp and 'avg_rating' in qp.get('ordering'):
-            return qset.annotate(avg_ratings=Avg('rating__rating')).order_by(qp.get('ordering')+'s')
-        return qset
+        if 'ordering' in query_parameters and 'avg_rating' in query_parameters.get('ordering'):
+            return book_queryset.annotate(avg_ratings=Avg('rating__rating')).order_by(query_parameters.get('ordering')+'s')
+        return book_queryset
+
 
 class BooksDetail(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update or delete a specific Book"""
@@ -130,8 +131,8 @@ class RecordList(generics.ListCreateAPIView):
             status='pending')
         request.status='accepted'
         request.save()
-        send_notif(f"You have been issued book {self.request.data['book']} for {self.request.data['issue_period_weeks']} weeks.", request.reader.username)
-        send_mail('Book Issued', f"You have been issued book {self.request.data['book']} for {self.request.data['issue_period_weeks']} weeks.", "mubasherhussain3293@gmail.com", [User.objects.get(username=self.request.data['reader']).email], fail_silently=True)
+        send_push_notification(f"You have been issued book {self.request.data['book']} for {self.request.data['issue_period_weeks']} weeks.", request.reader.username)
+        send_mail('Book Issued', f"You have been issued book {self.request.data['book']} for {self.request.data['issue_period_weeks']} weeks.", settings.DEFAULT_FROM_EMAIL, [User.objects.get(username=self.request.data['reader']).email], fail_silently=True)
 
 
 class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -164,12 +165,12 @@ class RecordDetail(generics.RetrieveUpdateDestroyAPIView):
                 fine_status = 'pending'
                 fine_message += f"with fine {fine} for late returning"
             serializer.save(fine=fine, fine_status=fine_status)
-            send_notif(f"Your book {record.book} is returned successfully {fine_message}", record.reader.username)
-            send_mail('Book Returned', f"Your book {record.book} is returned successfully {fine_message}", "mubasherhussain3293@gmail.com", [record.reader.email], fail_silently=True)
+            send_push_notification(f"Your book {record.book} is returned successfully {fine_message}", record.reader.username)
+            send_mail('Book Returned', f"Your book {record.book} is returned successfully {fine_message}", settings.DEFAULT_FROM_EMAIL, [record.reader.email], fail_silently=True)
         else:
             record = self.get_object()
-            send_notif(f"Your fine {record.fine} is paid successfully for overdue book {record.book} .", record.reader.username)
-            send_mail('Fine Paid', f"Your fine {record.fine} is paid successfully for overdue book {record.book} .", "mubasherhussain3293@gmail.com", [record.reader.email], fail_silently=True)
+            send_push_notification(f"Your fine {record.fine} is paid successfully for overdue book {record.book} .", record.reader.username)
+            send_mail('Fine Paid', f"Your fine {record.fine} is paid successfully for overdue book {record.book} .", settings.DEFAULT_FROM_EMAIL, [record.reader.email], fail_silently=True)
             serializer.save(fine_status='paid')
 
 
@@ -194,7 +195,7 @@ class RequestList(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         serializer.save(reader=self.request.user)
-        send_mail('Request Created', f"Your request to issue book {self.request.data['book']} is created. Check your requests list to see your progress.", "mubasherhussain3293@gmail.com", [self.request.user.email], fail_silently=True)
+        send_mail('Request Created', f"Your request to issue book {self.request.data['book']} is created. Check your requests list to see your progress.", settings.DEFAULT_FROM_EMAIL, [self.request.user.email], fail_silently=True)
 
 
 class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -205,7 +206,7 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         request = self.get_object()
         if self.request.data['status'] == 'rejected' :
-            send_notif(f"Your request to issue book {request.book} is rejected.", request.reader.username)
+            send_push_notification(f"Your request to issue book {request.book} is rejected.", request.reader.username)
         serializer.save()
 
 
@@ -277,16 +278,6 @@ class RegisterLibrarian(APIView):
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': default_token_generator.make_token(user),
             })
-            #htmly = get_template('staff_activation.html')
-            #data = Context({
-            #    'password': body['password', 
-             #   'user': user, 
-              #  'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-               # 'token': default_token_generator.make_token(user),]
-                #})
-            #subject, from_email, to = 'Activate Account', 'mubasherhussain3293@gmail.com', [body['email']]
-            #html_content = htmly.render(data)
-            #msg = EmailMultiAlternatives(subject, 'Template Not Found', from_email, [to])
             send_mail(mail_subject, '', 'mubasherhussain3293@gmail.com', [body['email']], html_message=message)
             return JsonResponse({'success': "Staff Added."})
         except:
@@ -355,7 +346,7 @@ def register_reader(request):
             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
             'token': default_token_generator.make_token(user),
         })
-        send_mail(mail_subject, message, 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True)
+        send_mail(mail_subject, '', 'mubasherhussain3293@gmail.com', [body['email']], fail_silently=True, html_message=message)
         return JsonResponse({'success': "Registered as normal User. Please activate your account from link in you mail"})
     except Exception as e:
         print(e)
@@ -393,12 +384,13 @@ def set_password(request):
     else:
         return HttpResponse('Activation link is invalid!')
 
-
+@api_view(['POST'])
 def logout_request(request):
     body = json.loads(request.body)
     refresh_token = body["refresh_token"]
     try:
         token = RefreshToken(refresh_token)
+        redis_instance.delete(request.user.username)
     except:
         return JsonResponse({'Success': 'Logged Out'})    
     if refresh_token:
@@ -411,12 +403,12 @@ def print_channel(request):
     body = json.loads(request.body)
     message = body['message']
     recipient = body['recipient']
-    if send_notif(message, recipient):    
+    if send_push_notification(message, recipient):    
         return JsonResponse({'success': 'success'})
     return JsonResponse({'error': 'The recipient is not online'})    
 
 
-def send_notif(message, recipient):
+def send_push_notification(message, recipient):
     try:
         channel_layer = get_channel_layer()
         channel = redis_instance.get(recipient)
