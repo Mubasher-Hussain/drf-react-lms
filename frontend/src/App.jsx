@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import {
   BrowserRouter as Router,
@@ -10,7 +10,7 @@ import {
 import { createNotification, changeState, setRef } from './reduxStore/appSlice'
 import "./App.scss";
 import { Activate, Login, Register, AddStaff, SetPass } from "./login/index";
-import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Dashboard } from "./books";
+import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Dashboard } from "./books";
 import { InjectAxiosInterceptors } from "./auth/axiosConfig";
 
 import NotificationSystem from 'react-notification-system';
@@ -42,8 +42,8 @@ function App (){
       dispatch(createNotification([e.data, 'warning']));
     };
 
-    socketRef.onerror = e => {
-      dispatch(createNotification(['Error in socket', 'error']));
+    socketRef.onerror = () => {
+      //dispatch(createNotification(['Error in socket', 'error']));
       console.log('Error in socket')
     };
     socketRef.onclose = () => {
@@ -66,7 +66,6 @@ function App (){
         <Switch>
           <Route exact path='/'><Redirect to='/booksList/All'></Redirect></Route>
           <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
-          <Route exact path="/home" component={Home}/>
           <Route exact path="/addStaff" component={AddStaff}/>
           <Route exact path="/setPassword" component={SetPass}/>
           <Route exact path="/activateAccount" component={Activate}/>

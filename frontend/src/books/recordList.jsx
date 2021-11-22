@@ -123,7 +123,7 @@ export function RecordsList(props) {
             <div>
             {localStorage.getItem('isStaff') && !record.return_date && (
               <button
-                class="btn-warning btn-rounded btn-brown"
+                className="btn-warning btn-rounded btn-brown"
                 style={{fontSize: '13px'}}
                 onClick={() => {
                   var date =new Date();
@@ -133,7 +133,7 @@ export function RecordsList(props) {
                   .patch(`server/api/record/${record.id}/return-book`,
                     {'return_date': date},
                     )
-                  .then(res => {
+                  .then(() => {
                     dispatch(createNotification([`Book '${record.book.title}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success']));
                     history.push('/');
                     history.goBack(); 
@@ -143,7 +143,7 @@ export function RecordsList(props) {
                   })
                 }}
               >
-                <i class="fas fa-redo pr-2" aria-hidden="true"></i>
+                <i className="fas fa-redo pr-2" aria-hidden="true"></i>
                 Return Book
               </button>
             
@@ -156,7 +156,7 @@ export function RecordsList(props) {
                   .patch(`server/api/record/${record.id}/pay-fine`,
                     {'fine_status': 'paid'},
                     )
-                  .then(res => {
+                  .then(() => {
                     dispatch(createNotification([`Fine for Book '${record.book.title}' Successfully Paid For User '${record.reader}'.`, 'success']));
                     history.push('/');
                     history.goBack(); 
@@ -207,7 +207,7 @@ export function RecordsList(props) {
   }
 
   return (
-    <div class='bookList'>
+    <div className='bookList'>
       <h1>{reader} Records List</h1>
       <hr/>
       <Container>

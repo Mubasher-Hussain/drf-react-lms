@@ -1,13 +1,13 @@
-import React,  { useEffect, useState } from "react";
+import React,  { useState } from "react";
 import { useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { changeName, createNotification } from '../reduxStore/appSlice'
 import axios from "../auth/axiosConfig";
 import loginImg from "../login.svg";
 import { login } from "../auth"
     
-export function Login (props) {
+export function Login () {
   const [state, setState] = useState(
     {
       formData: {

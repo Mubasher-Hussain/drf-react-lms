@@ -27,7 +27,7 @@ export function UserDetails(props) {
     let url = `server/api/user/${pk}/delete`;
     axios
     .delete(url)
-    .then(res => {
+    .then(() => {
       dispatch(createNotification(['User Deleted', 'success']));
       history.goBack();
     })
@@ -53,16 +53,16 @@ export function UserDetails(props) {
     if (userDetails && userDetails.user){
       return (
         <div>
-          <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
+          <div className="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
             <h1>{userDetails.user.username}</h1>
             <hr/>
             <p style={{ textAlign: 'left' }}>Email: {userDetails.user.email}</p>
             <p style={{ textAlign: 'left' }}>Fine: {userDetails.fine}</p>
             <hr/>
             <div style={{textAlign: "left"}}>
-              <span class="badge"><NavLink to={'/dashboard/' + userDetails.user.username} >Analysis</NavLink></span>
-              <span class="badge"><NavLink to={'/recordsList/' + userDetails.user.username} >Records</NavLink></span>
-              <span class="badge"><NavLink to={'/requestsList/' + userDetails.user.username} >Requests</NavLink></span>
+              <span className="badge"><NavLink to={'/dashboard/' + userDetails.user.username} >Analysis</NavLink></span>
+              <span className="badge"><NavLink to={'/recordsList/' + userDetails.user.username} >Records</NavLink></span>
+              <span className="badge"><NavLink to={'/requestsList/' + userDetails.user.username} >Requests</NavLink></span>
             </div>  
             <hr/>
           </div>  
@@ -71,10 +71,10 @@ export function UserDetails(props) {
               <button type="button" className="btn" onClick={deleteUser}>
               Delete
               </button>
-              <div class="form-group">
+              <div className="form-group">
                 <label style= {{float: 'left'}} htmlFor="notify">Push Notification</label>
                 <textarea
-                  class="form-control"
+                  className="form-control"
                   id="notify"
                   placeholder="Message"
                   value={message}
@@ -95,8 +95,8 @@ export function UserDetails(props) {
   
   
   return (
-    <div class="bookList">
-      <div class='container'>
+    <div className="bookList">
+      <div className='container'>
         { displayDetail()}
       </div>
     </div>

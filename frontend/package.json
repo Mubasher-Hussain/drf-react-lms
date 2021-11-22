@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/core": "^7.16.0",
     "@devexpress/dx-react-chart": "^2.7.6",
     "@devexpress/dx-react-chart-material-ui": "^2.7.6",
     "@devexpress/dx-react-core": "^2.7.6",
@@ -38,10 +39,10 @@
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
+    "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
     "lint": "eslint src/**/*.js src/**/*.jsx"
   },
   "engines": {
@@ -68,6 +69,7 @@
   },
   "proxy": "http://localhost:8000",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.16.3",
     "eslint": "^8.3.0",
     "eslint-plugin-react": "^7.27.1",
     "sass": "^1.39.2"

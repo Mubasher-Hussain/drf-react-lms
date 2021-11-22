@@ -8,7 +8,7 @@ import { createNotification } from "../reduxStore/appSlice";
 import TextField from '@mui/material/TextField';
 
 
-export function SetPass (props) {
+export function SetPass () {
 
   const [state, setState] = useState(
     {
@@ -116,7 +116,7 @@ export function SetPass (props) {
 function RegisterButton(props) {
   const history = useHistory();
   const dispatch = useDispatch();
-  function handleClick(type) {
+  function handleClick() {
     if(!props.isFormValid){
       let errors = props.error;
       var errorValues = Object.keys(errors).map(function(key){
@@ -126,7 +126,6 @@ function RegisterButton(props) {
       return null;
     }
     let formData = props.formData;
-    var url ;
     axios
     .post(`server/api/set-password`, formData)
     .then(res => {

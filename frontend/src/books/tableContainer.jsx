@@ -121,9 +121,9 @@ useEffect(() => {
 
   return (
     <>
-    <Table bordered hover {...getTableProps()}>
-      <thead>
-      <tr>
+      <Table bordered hover {...getTableProps()}>
+        <thead>
+          <tr>
             <th
               colSpan={visibleColumns.length}
               style={{
@@ -141,20 +141,20 @@ useEffect(() => {
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th scope="col">
-              <div>
-                  {column.canFilter ? column.render("Filter") : null}
-              </div>
-              <div {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render("Header")}
-                  <span>
-                  {column.isSorted
-                  ? column.isSortedDesc
-                    ? <ArrowDropDownIcon color="primary"/>
-                    : <ArrowDropUpIcon color="primary" />
-                  : ''}
-                  </span>
-              </div>
-          </th>
+                <div>
+                    {column.canFilter ? column.render("Filter") : null}
+                </div>
+                <div {...column.getHeaderProps(column.getSortByToggleProps())}>
+                    {column.render("Header")}
+                    <span>
+                    {column.isSorted
+                    ? column.isSortedDesc
+                      ? <ArrowDropDownIcon color="primary"/>
+                      : <ArrowDropUpIcon color="primary" />
+                    : ''}
+                    </span>
+                </div>
+              </th>
             ))}
           </tr>
         ))}

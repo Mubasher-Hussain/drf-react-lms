@@ -8,6 +8,5 @@ export { RecordsList } from './recordList';
 export { UserDetails } from './userDetails';
 export { UsersList } from './userList';
 export { Sidebar } from './sidebar';
-export { Home } from './home';
 export { TableContainer } from './tableContainer';
 export { Dashboard } from './dashboard';

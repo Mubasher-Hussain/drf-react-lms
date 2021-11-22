@@ -1,6 +1,6 @@
 import React from 'react';
-import {  useSelector, useDispatch } from 'react-redux';
-import {  changeName, createNotification } from '../reduxStore/appSlice'
+import { useDispatch } from 'react-redux';
+import { changeName, createNotification } from '../reduxStore/appSlice'
 
 import {
   CDBSidebar,
@@ -17,7 +17,7 @@ import { logout, useAuth } from "../auth";
 import "bootstrap/dist/css/bootstrap.min.css"
 
 
-export function Sidebar (props) {
+export function Sidebar () {
   const [logged] = useAuth();
   const isStaff = localStorage.getItem('isStaff');
   const history = useHistory();
@@ -144,4 +144,4 @@ export function Sidebar (props) {
       </CDBSidebar>
     </div>
   );
-};
+}

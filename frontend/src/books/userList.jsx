@@ -24,7 +24,7 @@ export function UsersList() {
 
   const url = '../server/api/users';
   const dispatch = useDispatch();
-  function displayList(filter){     
+  function displayList(){     
     if (usersList && usersList.length){
       return usersList.map((user)=>{
         return(         
@@ -35,9 +35,9 @@ export function UsersList() {
             <td>{user.is_active ? "Yes" : "No"}</td>
             <td>{new Date(user.date_joined).toString()}</td>
             <td>
-              <span class="badge"><NavLink to={'/dashboard/' + user.username} >Analysis</NavLink></span>
-              <span class="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
-              <span class="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
+              <span className="badge"><NavLink to={'/dashboard/' + user.username} >Analysis</NavLink></span>
+              <span className="badge"><NavLink to={'/recordsList/' + user.username} >Records</NavLink></span>
+              <span className="badge"><NavLink to={'/requestsList/' + user.username} >Requests</NavLink></span>
             </td>
           </tr>            
         )
@@ -74,7 +74,7 @@ export function UsersList() {
   }, [page, search, ordering])
   
   return (
-    <div class='bookList'>
+    <div className='bookList'>
       <h1>Users List</h1>
       <SearchField 
         placeholder='e.g field1 field2 field3'

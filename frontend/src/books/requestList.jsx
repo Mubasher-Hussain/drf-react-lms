@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useHistory,
-  useLocation,
   NavLink,
 } from "react-router-dom";
 
@@ -92,7 +91,7 @@ export function RequestsList(props) {
                   onClick={() => 
                     axios
                     .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book.title, 'issue_period_weeks': request.issue_period_weeks})
-                    .then(res => {
+                    .then(() => {
                       dispatch(createNotification([`Book '${request.book.title}' Successfully Issued For User '${request.reader}'. See Record List to return book.`, 'success']));
                       history.push('/');
                       history.goBack(); 
@@ -109,7 +108,7 @@ export function RequestsList(props) {
                 onClick={() => 
                   axios
                   .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})
-                  .then(res => {
+                  .then(() => {
                     dispatch(createNotification([`Issue Request for book '${request.book.title}' by User '${request.reader}' Rejected`, 'success']));
                     history.push('/')
                     history.goBack(); 
@@ -171,7 +170,7 @@ export function RequestsList(props) {
   }
 
   return (
-    <div class='bookList'>
+    <div className='bookList'>
      <h1>{reader} Requests List</h1>
       <hr/>
       <Container>

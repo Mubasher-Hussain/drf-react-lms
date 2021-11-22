@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import axios from "../auth/axiosConfig";
 import { changeState } from "../reduxStore/bookSlice";
@@ -26,7 +26,7 @@ export  function EditBook (props){
     form_data.append('published_on', bookData.published_on);
     axios
     .put(`server/api/book/${pk}/edit`, form_data)
-    .then(res => {
+    .then(() => {
       dispatch(createNotification(['book Updated', 'success']));
       dispatch(changeState({}))
       history.goBack();

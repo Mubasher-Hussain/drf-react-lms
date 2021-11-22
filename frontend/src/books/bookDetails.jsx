@@ -53,7 +53,7 @@ export function BookDetails(props) {
     let url = `server/api/book/${pk}/delete`;
     axios
     .delete(url)
-    .then(res => {
+    .then(() => {
       dispatch(createNotification(['Book Deleted', 'success']));
       history.goBack();
     })
@@ -71,7 +71,7 @@ export function BookDetails(props) {
     let rating = newRating==null ? 0: newRating
     axios
     .post(baseURL, {rating: rating, book: bookDetails.book.title})
-    .then(res => {
+    .then(() => {
       dispatch(createNotification(['Book Rated', 'success']));
       history.push('/');
       history.goBack();
@@ -83,24 +83,24 @@ export function BookDetails(props) {
     if (bookDetails && bookDetails.book){
       return (
         <div>
-          <div class="col-md-12" style={{ marginBottom:'5px', padding:'5px'}}>
-            <div class="content">
-              <figure class="t-cover">
+          <div className="col-md-12" style={{ marginBottom:'5px', padding:'5px'}}>
+            <div className="content">
+              <figure className="t-cover">
                 <img style={{width: 350, height: 400}} className='tc br3' alt='none' src={ bookDetails.book.cover } />
               </figure>
-              <div class="metadata" style={{'marginLeft': '30px'}}>
-                <h1 class="text-success">{bookDetails.book.title}</h1>
+              <div className="metadata" style={{'marginLeft': '30px'}}>
+                <h1 className="text-success">{bookDetails.book.title}</h1>
                 <hr/>
-                <div class="t-authors">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></div>
-                <div class="t-release-date">Published On :{bookDetails.book.published_on}</div>
+                <div className="t-authors">Author: <NavLink to={'/booksList/' + bookDetails.book.author} >{bookDetails.book.author}</NavLink></div>
+                <div className="t-release-date">Published On :{bookDetails.book.published_on}</div>
                 <div >Quantity :{bookDetails.book.quantity}</div>
                 <div id="titlePromo">
                   <hr/>
                   <hr/>
-                  <p class='text-warning' style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
+                  <p className='text-warning' style={{minHeight: '50px', textAlign: 'left', overflow: 'auto'}}>{bookDetails.book.summary}</p>
                   <hr/>
                 </div>
-                <div class="t-release-date">
+                <div className="t-release-date">
                   Category :
                   <NavLink to={`/booksList/All/${bookDetails.book.category}`}>
                     {bookDetails.book.category}
@@ -139,7 +139,7 @@ export function BookDetails(props) {
                 </Box>
                 }
                 <hr/>
-                <div class="controls">
+                <div className="controls">
                   {localStorage.getItem('isStaff') && (
                     <p>
                       <button className='btn-primary' onClick={() => {
@@ -162,8 +162,8 @@ export function BookDetails(props) {
                     </p>
                   )}
                   {logged && !localStorage.getItem('isStaff') && (
-                    <div class="container">
-                      <select class="form-select" id="issue-period" aria-label="Default select example" value={issuePeriod} onChange={handleChange}>
+                    <div className="container">
+                      <select className="form-select" id="issue-period" aria-label="Default select example" value={issuePeriod} onChange={handleChange}>
                         <option value="1" selected>1 Week</option>
                         <option value="2">2 Week</option>
                         <option value="4">4 Week</option>
@@ -173,7 +173,7 @@ export function BookDetails(props) {
                         onClick={() =>{
                           axios
                           .post('server/api/requests/create', {'book': bookDetails.book.title, 'issue_period_weeks':issuePeriod})
-                          .then(res => {
+                          .then(() => {
                             dispatch(createNotification([`Issue Request for book ${bookDetails.book.title} Created`, 'success']));
                             history.goBack(); 
                           })
@@ -198,8 +198,8 @@ export function BookDetails(props) {
   
   
   return (
-    <div class="bookList">
-      <div class='container border'>
+    <div className="bookList">
+      <div className='container border'>
         { displayDetail()}
       </div>
       

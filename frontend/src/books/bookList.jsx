@@ -142,7 +142,7 @@ export function BooksList(props) {
   }
 
   return (
-    <div class='bookList'>
+    <div className='bookList'>
       <h1>Books Catalogue</h1>
         <Container>
           <TableContainer

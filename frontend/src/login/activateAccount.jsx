@@ -7,7 +7,7 @@ import axios from "../auth/axiosConfig";
 import { createNotification } from "../reduxStore/appSlice";
 import CircularProgress from '@mui/material/CircularProgress';
 
-export function Activate (props) {
+export function Activate () {
 
   const location = useLocation()
   const dispatch = useDispatch()
@@ -19,7 +19,7 @@ export function Activate (props) {
   useEffect(() => {
     axios
     .get(`server/activate/${uidb64}/${token}`)
-    .then(res => {
+    .then(() => {
         dispatch(createNotification(['Account Activated. Now Login', 'success']));
         history.push('/');
         history.push('/login');

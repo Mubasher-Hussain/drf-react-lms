@@ -8,7 +8,7 @@ import { createNotification } from "../reduxStore/appSlice";
 import { useDispatch } from "react-redux";
 
 // For creating new book
-export function NewBook (props){
+export function NewBook (){
   const history = useHistory();
   const dispatch = useDispatch();
   
@@ -24,7 +24,7 @@ export function NewBook (props){
     form_data.append('quantity', bookData.quantity);
     axios
     .post('server/api/books/create', form_data)
-    .then(res => {
+    .then(() => {
       dispatch(createNotification(['Book Created', 'success']))
       history.goBack(); 
     })

@@ -3,7 +3,7 @@ import React from "react";
 import axios from "../auth/axiosConfig";
 
 export function SelectColumnFilter({
-    column: { filterValue, setFilter, preFilteredRows, id },
+    column: { filterValue, setFilter, id },
   }) {
     const [optionsList, setOptionsList] = React.useState();
     let url ;
