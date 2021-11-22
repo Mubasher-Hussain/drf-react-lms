@@ -92,7 +92,7 @@ export function BookFormat(props){
           style={{minHeight: '200px', fontSize: '16px'}}
          />
       </div>
-      <button type="button" className="btn" onClick={() => props.handleClick(bookData)}>
+      <button type="button" className="btn-primary" onClick={() => props.handleClick(bookData)}>
       Submit
       </button>
     </div>

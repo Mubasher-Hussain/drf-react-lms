@@ -15,6 +15,7 @@ export function UserDetails(props) {
   const history = useHistory();
   const dispatch = useDispatch();
   const [userDetails, setUserDetails] = useState({ user: null, fine: null});
+  const [message, setMessage] = useState()
   useEffect(async() => {
     const userData = await axios(
       `server/api/user/${pk}`
@@ -34,7 +35,7 @@ export function UserDetails(props) {
   }
   function pushNotify(){
     axios
-    .post('server/api/notify', {'recipient': userDetails.user.username, 'message': document.getElementById('notify').value})
+    .post('server/api/notify', {'recipient': userDetails.user.username, 'message': message})
     .then(res => {
       if (res.data.success){
         dispatch(createNotification([res.data.success, 'success']));
@@ -44,6 +45,9 @@ export function UserDetails(props) {
         dispatch(createNotification([res.data.error, 'error']));
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
+  }
+  function handleChange(event){
+    setMessage(event.target.value)
   }
   function displayDetail(){
     if (userDetails && userDetails.user){
@@ -73,6 +77,8 @@ export function UserDetails(props) {
                   class="form-control"
                   id="notify"
                   placeholder="Message"
+                  value={message}
+                  onChange={handleChange}
                 />
               </div>
               <button type="button" className="btn" onClick={pushNotify}>

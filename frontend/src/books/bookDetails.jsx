@@ -33,8 +33,10 @@ export function BookDetails(props) {
   const history = useHistory();
   const [logged] = useAuth();
   const [bookDetails, setBookDetails] = useState({ book: null, user_rating: null});
-  const [hover, setHover] = React.useState(-1);
-  const [newRating, setNewRating] = React.useState();
+  const [hover, setHover] = useState(-1);
+  const [newRating, setNewRating] = useState();
+  const [issuePeriod, setIssuePeriod] = useState();
+
   const dispatch = useDispatch()
   useEffect(async() => {
     const bookData = await axios(
@@ -58,6 +60,10 @@ export function BookDetails(props) {
     .catch( (error) => dispatch(createNotification([error.message + '.Either Unauthorised or Empty Field', 'error'])))
   }
   
+  function handleChange(event){
+    setIssuePeriod(event.target.value)
+  }
+
   function rateBook(){
     let url = `server/api/book/updateRating`;
     let url2 = `server/api/book/createRating`;
@@ -104,10 +110,10 @@ export function BookDetails(props) {
                 <Typography component="legend">Book Rating:</Typography>
                 <Rating
                     value={bookDetails.book.avg_rating}
-                    precision={0, .1}
+                    precision={0.25}
                     readOnly
                   />
-                  <label>({bookDetails.book.total_reviewers} Reviewers)</label>
+                  <Box>{bookDetails.book.avg_rating} / 5 ({bookDetails.book.total_reviewers} Reviewers)</Box>
                 <hr/>
                 {!localStorage.getItem('isStaff') && localStorage.getItem('name') &&
                 <Box>
@@ -116,7 +122,7 @@ export function BookDetails(props) {
                     name="hover-feedback"
                     value={newRating}
                     defaultValue={newRating}
-                    precision={0, .5}
+                    precision={0.5}
                     onChange={(event, newValue) => {
                       setNewRating(newValue);
                     }}
@@ -156,12 +162,17 @@ export function BookDetails(props) {
                     </p>
                   )}
                   {logged && !localStorage.getItem('isStaff') && (
-                    <p>
+                    <div class="container">
+                      <select class="form-select" id="issue-period" aria-label="Default select example" value={issuePeriod} onChange={handleChange}>
+                        <option value="1" selected>1 Week</option>
+                        <option value="2">2 Week</option>
+                        <option value="4">4 Week</option>
+                      </select>
                       <button
-                        className='btn'
+                        className='btn-primary'
                         onClick={() =>{
                           axios
-                          .post('server/api/requests/create', {'book': bookDetails.book.title, 'issue_period_weeks':document.getElementById("issue-period").value})
+                          .post('server/api/requests/create', {'book': bookDetails.book.title, 'issue_period_weeks':issuePeriod})
                           .then(res => {
                             dispatch(createNotification([`Issue Request for book ${bookDetails.book.title} Created`, 'success']));
                             history.goBack(); 
@@ -174,12 +185,7 @@ export function BookDetails(props) {
                       >
                         Issue Request
                       </button>
-                      <select class="form-select" id="issue-period" aria-label="Default select example">
-                        <option value="1" selected>1 Week</option>
-                        <option value="2">2 Week</option>
-                        <option value="4">4 Month</option>
-                      </select>
-                    </p>
+                    </div>
                   )}
                 </div>
               </div>

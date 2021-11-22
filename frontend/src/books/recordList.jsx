@@ -123,7 +123,7 @@ export function RecordsList(props) {
             <div>
             {localStorage.getItem('isStaff') && !record.return_date && (
               <button
-                class="btn btn-rounded btn-brown"
+                class="btn-warning btn-rounded btn-brown"
                 style={{fontSize: '13px'}}
                 onClick={() => {
                   var date =new Date();
@@ -150,7 +150,7 @@ export function RecordsList(props) {
             )}
             {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status==='pending' && (
             <button
-                className='btn far fa-money-bill-alt'
+                className='btn-success far fa-money-bill-alt'
                 onClick={() => {
                   axios
                   .patch(`server/api/record/${record.id}/pay-fine`,

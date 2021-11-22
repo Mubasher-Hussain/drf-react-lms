@@ -88,7 +88,7 @@ export function RequestsList(props) {
             {localStorage.getItem('isStaff') && (request.status==='pending') && (
               <p>
                 <button
-                  className='btn'
+                  className='btn-success'
                   onClick={() => 
                     axios
                     .post(`server/api/records/create`, {'reader': request.reader, 'book': request.book.title, 'issue_period_weeks': request.issue_period_weeks})
@@ -105,7 +105,7 @@ export function RequestsList(props) {
                   Accept
                 </button>
                 <button
-                className='btn'
+                className='btn-secondary'
                 onClick={() => 
                   axios
                   .patch(`server/api/request/${request.id}/edit`, {'status': 'rejected'})

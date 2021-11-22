@@ -5,7 +5,8 @@ import {Table} from 'react-bootstrap'
 import Pagination from "@mui/material/Pagination"
 import "bootstrap/dist/css/bootstrap.min.css"
 import Skeleton from '@mui/material/Skeleton';
-
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 function GlobalFilter({
   totalRecords,
@@ -111,7 +112,7 @@ const handleChange = (event, value) => {
   gotoPage(value-1);
 };
 
-const onFetchDataDebounced = useAsyncDebounce(fetchData, 200)
+const onFetchDataDebounced = useAsyncDebounce(fetchData, 400)
 
 useEffect(() => {
   onFetchDataDebounced({ pageIndex, pageSize, sortBy, globalFilter, filters })
@@ -140,18 +141,18 @@ useEffect(() => {
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th scope="col">
+              <div>
+                  {column.canFilter ? column.render("Filter") : null}
+              </div>
               <div {...column.getHeaderProps(column.getSortByToggleProps())}>
                   {column.render("Header")}
                   <span>
                   {column.isSorted
                   ? column.isSortedDesc
-                    ? ' 🔽'
-                    : ' 🔼'
+                    ? <ArrowDropDownIcon color="primary"/>
+                    : <ArrowDropUpIcon color="primary" />
                   : ''}
                   </span>
-              </div>
-              <div>
-                  {column.canFilter ? column.render("Filter") : null}
               </div>
           </th>
             ))}
@@ -178,6 +179,9 @@ useEffect(() => {
             {loading ? (
               <td colSpan="10000">
               <Skeleton animation="wave" />
+              <Skeleton />
+              <Skeleton />
+                  
               </td>
             ) : (
               <td colSpan="10000">

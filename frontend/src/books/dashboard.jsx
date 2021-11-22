@@ -102,13 +102,13 @@ export function Dashboard(props) {
             <div class="info-box mb-3">
               <span class="info-box-icon bg-success elevation-1"><i class="fas fa-shopping-cart"></i></span>
               <div>
-                {localStorage.getItem('isStaff') &&
-                <NavLink to = '/graphList'>
+                {!reader &&
+                <NavLink to = '/recordsList'>
                   <span>Books Currently Issued: </span>
                 </NavLink>
                 }
-                {!localStorage.getItem('isStaff') &&
-                <NavLink to = {`/graphList/${localStorage.getItem('name')}`} >
+                {reader &&
+                <NavLink to = {`/recordsList/${reader}`} >
                   <span>Books Currently Issued: </span>
                 </NavLink>
                 }
@@ -222,7 +222,7 @@ export function Dashboard(props) {
        
         {displayGraph1()}
         <hr/>
-        <h3> Select Month For Most Issued Books </h3>
+        <h4> Select Month For Most Issued Books </h4>
         <input
         type="date"
         class="form-control"
@@ -232,7 +232,6 @@ export function Dashboard(props) {
         />
       <hr/>
         {displayGraph2()}
-    
     </div>
   )
 
