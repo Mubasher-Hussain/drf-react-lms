@@ -390,11 +390,10 @@ def logout_request(request):
     refresh_token = body["refresh_token"]
     try:
         token = RefreshToken(refresh_token)
+        token.blacklist()
         redis_instance.delete(request.user.username)
     except:
         return JsonResponse({'Success': 'Logged Out'})    
-    if refresh_token:
-        token.blacklist()
     return JsonResponse({'Success': 'Logged Out'})
 
 
