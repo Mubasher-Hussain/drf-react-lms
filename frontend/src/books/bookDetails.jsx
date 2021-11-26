@@ -113,7 +113,7 @@ export function BookDetails(props) {
                     precision={0.25}
                     readOnly
                   />
-                  <Box>{bookDetails.book.avg_rating} / 5 ({bookDetails.book.total_reviewers} Reviewers)</Box>
+                  <Box>({bookDetails.book.total_reviewers} Reviewers)</Box>
                 <hr/>
                 {!localStorage.getItem('isStaff') && localStorage.getItem('name') &&
                 <Box>

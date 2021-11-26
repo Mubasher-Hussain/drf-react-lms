@@ -68,7 +68,7 @@ export function UserDetails(props) {
           </div>  
           {localStorage.getItem('isStaff') && (
             <p>
-              <button type="button" className="btn" onClick={deleteUser}>
+              <button type="button" className="btn-secondary" onClick={deleteUser}>
               Delete
               </button>
               <div className="form-group">
@@ -81,7 +81,7 @@ export function UserDetails(props) {
                   onChange={handleChange}
                 />
               </div>
-              <button type="button" className="btn" onClick={pushNotify}>
+              <button type="button" className="btn-success" onClick={pushNotify}>
                 Send Message
               </button>
               

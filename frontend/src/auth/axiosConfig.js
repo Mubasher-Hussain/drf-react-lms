@@ -65,7 +65,8 @@ axios.interceptors.response.use(
                     dispatch(createNotification(["Refresh token not found" , 'error']))
                 }
         }
-    dispatch(createNotification(["Refresh token rejected. Please login again" , 'error']))
+    //dispatch(createNotification(["Refresh token rejected. Please login again" , 'error']))
+    console.log('Not enough permission')
     history.push('/login')    
     return Promise.reject(error);
   }

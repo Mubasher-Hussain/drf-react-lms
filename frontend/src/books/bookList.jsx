@@ -55,8 +55,9 @@ export function BooksList(props) {
       {
         Header: "Author",
         accessor: "author",
-        Filter: SelectColumnFilter,
-        filter: 'includes',
+        Filter: false,
+        //Filter: SelectColumnFilter,
+        //filter: 'includes',
         Cell: (props) => {
           return(
             <NavLink to={'/booksList/' + props.row.original.author} >{props.row.original.author}</NavLink>

@@ -85,6 +85,7 @@ export function SetPass () {
           label="Password"
           value={state.formData.password1}
           variant="filled"
+          type='password'
           onChange={handleInputChange.bind(this)}
         />
         <TextField
@@ -95,6 +96,7 @@ export function SetPass () {
           label="Confirm Password"
           value={state.formData.password2}
           variant="filled"
+          type='password'
           onChange={handleInputChange.bind(this)}
         />
         </div>

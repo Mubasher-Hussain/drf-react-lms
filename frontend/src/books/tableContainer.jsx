@@ -15,9 +15,11 @@ function GlobalFilter({
 }) {
   const count = totalRecords
   const [search, setSearch] = useState(globalFilter)
+  const onFetchDataDebounced = useAsyncDebounce(setGlobalFilter, 200)
   function onChange (event)  {
     setSearch(event.target.value);
-    setGlobalFilter(event.target.value || undefined)
+    //setGlobalFilter(event.target.value || undefined)
+    onFetchDataDebounced(event.target.value || undefined)
   }
 
   return (
