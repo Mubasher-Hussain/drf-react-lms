@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import {
   BrowserRouter as Router,
@@ -9,10 +9,12 @@ import {
 
 import { createNotification, changeState, setRef } from './reduxStore/appSlice'
 import "./App.scss";
-import { Login, Register } from "./login/index";
-import { Home, BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Analysis } from "./books";
+import { Activate, Login, Register, AddStaff, SetPass } from "./login/index";
+import { BookDetails, BooksList, NewBook, EditBook, RequestsList, RecordsList, UserDetails, UsersList, Sidebar, Dashboard } from "./books";
+import { InjectAxiosInterceptors } from "./auth/axiosConfig";
 
 import NotificationSystem from 'react-notification-system';
+import "bootstrap/dist/css/bootstrap.min.css"
 
 const notificationSystem = React.createRef()
   
@@ -33,17 +35,20 @@ function App (){
   function connect(){
     var socketRef = new WebSocket('ws://localhost:8000/ws/chat' + "?token=" + localStorage.getItem('access_token'))
     socketRef.onopen = () => {
-      dispatch(createNotification(['WebSocket open', 'success']));
+      //dispatch(createNotification(['WebSocket open', 'success']));
+      console.log('Websocket Open')
     };
     socketRef.onmessage = e => {
       dispatch(createNotification([e.data, 'warning']));
     };
 
-    socketRef.onerror = e => {
-      dispatch(createNotification(['Error in socket', 'error']));
+    socketRef.onerror = () => {
+      //dispatch(createNotification(['Error in socket', 'error']));
+      console.log('Error in socket')
     };
     socketRef.onclose = () => {
-      dispatch(createNotification(['WebSocket Closed, Retrying', 'error']));
+      //dispatch(createNotification(['WebSocket Closed, Retrying', 'error']));
+      console.log('Socket closed')
       if(localStorage.getItem('access_token'))
         connect();
     };
@@ -55,63 +60,63 @@ function App (){
   return (
     <Router>
       <div className="App">
+        <InjectAxiosInterceptors />
         <NotificationSystem ref={notificationSystem} />
         <Sidebar createNotification={createNotification}/>
         <Switch>
           <Route exact path='/'><Redirect to='/booksList/All'></Redirect></Route>
           <Route exact path="/booksList/:author?/:category?" component={BooksList}/>
-          <Route exact path="/home" component={Home}/>
-          <Route exact path="/addStaff" component={Register}/>
+          <Route exact path="/addStaff" component={AddStaff}/>
+          <Route exact path="/setPassword" component={SetPass}/>
+          <Route exact path="/activateAccount" component={Activate}/>
           <Route exact path="/usersList" component={UsersList}/>
           <Route
             exact path="/requestsList/:reader?/:status?"
             children={({match}) => (
-              <RequestsList createNotification={createNotification} match={match} />
+              <RequestsList match={match} />
             )}
           />
           <Route
             exact path="/recordsList/:reader?/:status?"
             children={({match}) => (
-              <RecordsList createNotification={createNotification} match={match} />
+              <RecordsList match={match} />
             )}
           />
           <Route
-            exact path="/analysis/:reader?/:status?"
+            exact path="/dashboard/:reader?/:status?"
             children={({match}) => (
-              <Analysis createNotification={createNotification} match={match} />
+              <Dashboard match={match} />
             )}
           />
           <Route
             exact path="/bookDetails/:pk"
             children={({match}) => (
-              <BookDetails createNotification={createNotification} match={match} />
+              <BookDetails match={match} />
             )}
           />
           <Route
             exact path="/userDetails/:pk"
             children={({match}) => (
-              <UserDetails createNotification={createNotification} match={match} />
+              <UserDetails match={match} />
             )}
           />
           <PrivateRoute
             path="/createBook"
-            createNotification={createNotification}
             component={NewBook}
           />
           <PrivateRoute
             path="/editBook/:pk"
-            createNotification={createNotification}
             component={EditBook} 
           />
           <Route path="/login">
             <div className="login">
               <div className="container">
                 {isLogginActive && (
-                  <Login createNotification={createNotification}
+                  <Login 
                   />
                 )}
                 {!isLogginActive && (
-                  <Register createNotification={createNotification}  />
+                  <Register   />
                 )}
               </div>
               <RightSide
@@ -154,11 +159,11 @@ const RightSide = props => {
 
 
 // Reroutes to login page if non authorized user accesses certain elements
-const PrivateRoute = ({ component: Component, createNotification=createNotification ,...rest }) => {
+const PrivateRoute = ({ component: Component ,...rest }) => {
   const isStaff = localStorage.getItem('isStaff');
   return <Route {...rest} render={({match}) => (
       isStaff
-        ? <Component createNotification={createNotification} match={match} />
+        ? <Component match={match} />
         : <Redirect to='/login' />
     )} />
 }

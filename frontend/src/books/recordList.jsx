@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useHistory,
   NavLink,
@@ -44,7 +44,7 @@ export function RecordsList(props) {
         Filter: false,
         Cell: (props) => {
           return(
-          <NavLink to={`/bookDetails/${props.row.original.book.title}`}>{props.row.original.book.title}</NavLink>);
+          <NavLink to={`/bookDetails/${props.row.original.book.id}`}>{props.row.original.book.title}</NavLink>);
           }
       },
       {
@@ -65,7 +65,7 @@ export function RecordsList(props) {
           
           return(
             <p>
-            {new Date(props.row.original.issue_date).toString()}
+            {new Date(props.row.original.issue_date).toString().substring(0,24)}
             </p>
             );
           }
@@ -77,7 +77,7 @@ export function RecordsList(props) {
         Cell: (props) => {
           var deadline_issue = new Date(props.row.original.issue_date)
         deadline_issue.setDate(deadline_issue.getDate() + props.row.original.issue_period_weeks * 7)
-        deadline_issue = deadline_issue.toString()
+        deadline_issue = deadline_issue.toString().substring(0,24)
           return(
             <p>
             {deadline_issue}
@@ -94,7 +94,7 @@ export function RecordsList(props) {
           return(
             <div>
             {props.row.original.return_date &&
-              <p className='return'>{new Date(props.row.original.return_date).toString()}</p>
+              <p className='return'>{new Date(props.row.original.return_date).toString().substring(0,24)}</p>
             }
             {!props.row.original.return_date &&
               <p className='notReturn'>Not Returned</p>
@@ -123,7 +123,7 @@ export function RecordsList(props) {
             <div>
             {localStorage.getItem('isStaff') && !record.return_date && (
               <button
-                class="btn btn-rounded btn-brown"
+                className="btn-warning btn-rounded btn-brown"
                 style={{fontSize: '13px'}}
                 onClick={() => {
                   var date =new Date();
@@ -133,7 +133,7 @@ export function RecordsList(props) {
                   .patch(`server/api/record/${record.id}/return-book`,
                     {'return_date': date},
                     )
-                  .then(res => {
+                  .then(() => {
                     dispatch(createNotification([`Book '${record.book.title}' Successfully Returned For User '${record.reader}'. See Record List to return book.`, 'success']));
                     history.push('/');
                     history.goBack(); 
@@ -143,20 +143,20 @@ export function RecordsList(props) {
                   })
                 }}
               >
-                <i class="fas fa-redo pr-2" aria-hidden="true"></i>
+                <i className="fas fa-redo pr-2" aria-hidden="true"></i>
                 Return Book
               </button>
             
             )}
             {localStorage.getItem('isStaff') && record.fine>0 && record.fine_status==='pending' && (
             <button
-                className='btn far fa-money-bill-alt'
+                className='btn-success far fa-money-bill-alt'
                 onClick={() => {
                   axios
                   .patch(`server/api/record/${record.id}/pay-fine`,
                     {'fine_status': 'paid'},
                     )
-                  .then(res => {
+                  .then(() => {
                     dispatch(createNotification([`Fine for Book '${record.book.title}' Successfully Paid For User '${record.reader}'.`, 'success']));
                     history.push('/');
                     history.goBack(); 
@@ -207,10 +207,10 @@ export function RecordsList(props) {
   }
 
   return (
-    <div class='bookList'>
+    <div className='bookList'>
       <h1>{reader} Records List</h1>
       <hr/>
-      <Container style={{ marginTop: 100 }}>
+      <Container>
         <TableContainer
           columns={columns}
           data={recordsList}

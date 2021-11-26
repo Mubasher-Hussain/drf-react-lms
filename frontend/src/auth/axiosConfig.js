@@ -1,16 +1,34 @@
 import axios from 'axios'
+import {useHistory} from "react-router-dom";
+import {useEffect} from "react"
+
+import {  useDispatch } from 'react-redux';
+import {  createNotification } from '../reduxStore/appSlice'
+
+
 axios.defaults.baseURL = "../";
 axios.defaults.headers['Authorization'] = localStorage.getItem('access_token') ? "JWT " + localStorage.getItem('access_token') : null ;
 
+export function InjectAxiosInterceptors () {
+    const history = useHistory()
+    const dispatch = useDispatch()
+    useEffect(() => {
+      setAxiosInterceptor(history,dispatch)
+    }, [history])
+  
+    return null
+  }
+  
+export const setAxiosInterceptor = (history, dispatch) =>{
 axios.interceptors.response.use(
     response => response,
     error => {
         const originalRequest = error.config;
-
         if (error.response.status === 401 && originalRequest.url ==='server/token/refresh/') {
+            dispatch(createNotification(["Refresh token rejected" , 'error']))
+            history.push('/login')
             return Promise.reject(error);
         }
-
         if (error.response.data.code === "token_not_valid" &&
             error.response.status === 401 && 
             error.response.statusText === "Unauthorized") 
@@ -38,18 +56,20 @@ axios.interceptors.response.use(
                             return axios(originalRequest);
                         })
                         .catch(err => {
-                            console.log(err)
+                            dispatch(createNotification([err.message, 'error'])) 
                         });
                     }else{
-                        console.log("Refresh token is expired", tokenParts.exp, now);
+                        dispatch(createNotification(["Refresh token is expired" , 'error'])) 
                     }
                 }else{
-                    console.log("Refresh token not available.")
+                    dispatch(createNotification(["Refresh token not found" , 'error']))
                 }
         }
-      // specific error handling done elsewhere
-      return Promise.reject(error);
+    //dispatch(createNotification(["Refresh token rejected. Please login again" , 'error']))
+    console.log('Not enough permission')
+    history.push('/login')    
+    return Promise.reject(error);
   }
 );
-
+}
 export default axios

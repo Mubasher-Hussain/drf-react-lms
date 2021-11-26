@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { changeState } from '../reduxStore/bookSlice'
 
@@ -17,10 +17,10 @@ export function BookFormat(props){
   
   return (
     <div className="container">
-      <div class="form-group" >
+      <div className="form-group" >
         <label style= {{float: 'left'}} htmlFor="cover">Cover Photo</label>
         <input type="file"
-          class="form-control"
+          className="form-control"
           name="cover"
           placeholder="Cover Photo"
           onChange={handleInputChange.bind(this)}
@@ -28,10 +28,10 @@ export function BookFormat(props){
           style={{fontSize: '16px'}}
         />
       </div>
-      <div class="form-group" >
+      <div className="form-group" >
         <label style= {{float: 'left'}} htmlFor="title">Title</label>
         <input type="text"
-          class="form-control"
+          className="form-control"
           name="title"
           placeholder="Title"
           value={bookData.title}
@@ -39,10 +39,10 @@ export function BookFormat(props){
           style={{fontSize: '16px'}}
         />
       </div>
-      <div class="form-group" >
+      <div className="form-group" >
         <label style= {{float: 'left'}} htmlFor="author">Author</label>
         <input type="text"
-          class="form-control"
+          className="form-control"
           name="author"
           placeholder="Author"
           value={bookData.author}
@@ -50,10 +50,10 @@ export function BookFormat(props){
           style={{fontSize: '16px'}}
         />
       </div>
-      <div class="form-group" >
+      <div className="form-group" >
         <label style= {{float: 'left'}} htmlFor="category">Category</label>
         <input type="text"
-          class="form-control"
+          className="form-control"
           name="category"
           placeholder="Category"
           value={bookData.category}
@@ -61,11 +61,11 @@ export function BookFormat(props){
           style={{fontSize: '16px'}}
         />
       </div>
-      <div class="form-group" >
+      <div className="form-group" >
         <label style= {{float: 'left'}} htmlFor="quantity">Quantity</label>
         <input type="number"
           step="1"
-          class="form-control"
+          className="form-control"
           name="quantity"
           placeholder="Quantity"
           value={bookData.quantity}
@@ -76,15 +76,15 @@ export function BookFormat(props){
       <label style= {{float: 'left'}} htmlFor="published_on">Publish Date:</label>
       <input
         type="date"
-        class="form-control"
+        className="form-control"
         name="published_on"
         value={bookData.published_on}
         onChange={handleInputChange.bind(this)}
       />
-      <div class="form-group">
+      <div className="form-group">
         <label style= {{float: 'left'}} htmlFor="summary">Summary</label>
         <textarea
-          class="form-control"
+          className="form-control"
           name="summary"
           placeholder="Summary"
           value={bookData.summary}
@@ -92,7 +92,7 @@ export function BookFormat(props){
           style={{minHeight: '200px', fontSize: '16px'}}
          />
       </div>
-      <button type="button" className="btn" onClick={() => props.handleClick(bookData)}>
+      <button type="button" className="btn-primary" onClick={() => props.handleClick(bookData)}>
       Submit
       </button>
     </div>

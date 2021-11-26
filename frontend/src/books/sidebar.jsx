@@ -1,6 +1,6 @@
 import React from 'react';
-import {  useSelector, useDispatch } from 'react-redux';
-import {  changeName, createNotification } from '../reduxStore/appSlice'
+import { useDispatch } from 'react-redux';
+import { changeName, createNotification } from '../reduxStore/appSlice'
 
 import {
   CDBSidebar,
@@ -14,9 +14,10 @@ import { NavLink, useHistory } from 'react-router-dom';
 
 import axios from "../auth/axiosConfig";
 import { logout, useAuth } from "../auth";
+import "bootstrap/dist/css/bootstrap.min.css"
 
 
-export function Sidebar (props) {
+export function Sidebar () {
   const [logged] = useAuth();
   const isStaff = localStorage.getItem('isStaff');
   const history = useHistory();
@@ -24,7 +25,7 @@ export function Sidebar (props) {
   function serverLogout() {
     axios
     .post('server/api/logout/', {"refresh_token": localStorage.getItem("refresh_token")})
-    .then(() =>{
+    .finally(() =>{
       logout();
       dispatch(createNotification(['Logged Out', 'success']));
       localStorage.removeItem('isStaff');
@@ -58,10 +59,17 @@ export function Sidebar (props) {
 
         <CDBSidebarContent className="sidebar-content">
           <CDBSidebarMenu>
-            <NavLink exact to="/home" activeClassName="activeClicked">
-              <CDBSidebarMenuItem icon="columns">Home</CDBSidebarMenuItem>
+            <NavLink exact to="/dashboard" activeClassName="activeClicked">
+              {isStaff && 
+              <CDBSidebarMenuItem icon="chart-line">Dashboard</CDBSidebarMenuItem>
+              }
             </NavLink>
-
+            <NavLink exact to={`/dashboard/${localStorage.getItem('name')}`} activeClassName="activeClicked">
+              {!isStaff && localStorage.getItem('name') &&
+              <CDBSidebarMenuItem icon="chart-line">My Dashboard</CDBSidebarMenuItem>
+              }
+            </NavLink>
+            
             <NavLink exact to="/booksList/All" activeClassName="activeClicked">
               <CDBSidebarMenuItem icon="table">Books List</CDBSidebarMenuItem>
             </NavLink>
@@ -95,14 +103,6 @@ export function Sidebar (props) {
                 <CDBSidebarMenuItem icon="user">Profile</CDBSidebarMenuItem>
               }
             </NavLink>
-            
-            <NavLink exact to="/analysis" activeClassName="activeClicked">
-              {isStaff && 
-                <CDBSidebarMenuItem icon="chart-line">
-                  Analytics
-                </CDBSidebarMenuItem>
-              }
-            </NavLink> 
 
             <NavLink exact to={`/requestsList/${localStorage.getItem('name')}`} activeClassName="activeClicked">
               {!isStaff && logged &&
@@ -144,4 +144,4 @@ export function Sidebar (props) {
       </CDBSidebar>
     </div>
   );
-};
+}

@@ -15,6 +15,7 @@ export function UserDetails(props) {
   const history = useHistory();
   const dispatch = useDispatch();
   const [userDetails, setUserDetails] = useState({ user: null, fine: null});
+  const [message, setMessage] = useState()
   useEffect(async() => {
     const userData = await axios(
       `server/api/user/${pk}`
@@ -26,15 +27,15 @@ export function UserDetails(props) {
     let url = `server/api/user/${pk}/delete`;
     axios
     .delete(url)
-    .then(res => {
-      dispatch(createNotification('User Deleted', 'success'));
+    .then(() => {
+      dispatch(createNotification(['User Deleted', 'success']));
       history.goBack();
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
   }
   function pushNotify(){
     axios
-    .post('server/api/notify', {'recipient': userDetails.user.username, 'message': document.getElementById('notify').value})
+    .post('server/api/notify', {'recipient': userDetails.user.username, 'message': message})
     .then(res => {
       if (res.data.success){
         dispatch(createNotification([res.data.success, 'success']));
@@ -45,37 +46,42 @@ export function UserDetails(props) {
     })
     .catch( (error) => dispatch(createNotification([error.message + '.Unauthorised', 'error'])))
   }
+  function handleChange(event){
+    setMessage(event.target.value)
+  }
   function displayDetail(){
     if (userDetails && userDetails.user){
       return (
         <div>
-          <div class="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
+          <div className="col-md-12" style={{border: "1px solid black", marginBottom:'5px'}}>
             <h1>{userDetails.user.username}</h1>
             <hr/>
             <p style={{ textAlign: 'left' }}>Email: {userDetails.user.email}</p>
             <p style={{ textAlign: 'left' }}>Fine: {userDetails.fine}</p>
             <hr/>
             <div style={{textAlign: "left"}}>
-              <span class="badge"><NavLink to={'/analysis/' + userDetails.user.username} >Analysis</NavLink></span>
-              <span class="badge"><NavLink to={'/recordsList/' + userDetails.user.username} >Records</NavLink></span>
-              <span class="badge"><NavLink to={'/requestsList/' + userDetails.user.username} >Requests</NavLink></span>
+              <span className="badge"><NavLink to={'/dashboard/' + userDetails.user.username} >Analysis</NavLink></span>
+              <span className="badge"><NavLink to={'/recordsList/' + userDetails.user.username} >Records</NavLink></span>
+              <span className="badge"><NavLink to={'/requestsList/' + userDetails.user.username} >Requests</NavLink></span>
             </div>  
             <hr/>
           </div>  
           {localStorage.getItem('isStaff') && (
             <p>
-              <button type="button" className="btn" onClick={deleteUser}>
+              <button type="button" className="btn-secondary" onClick={deleteUser}>
               Delete
               </button>
-              <div class="form-group">
+              <div className="form-group">
                 <label style= {{float: 'left'}} htmlFor="notify">Push Notification</label>
                 <textarea
-                  class="form-control"
+                  className="form-control"
                   id="notify"
                   placeholder="Message"
+                  value={message}
+                  onChange={handleChange}
                 />
               </div>
-              <button type="button" className="btn" onClick={pushNotify}>
+              <button type="button" className="btn-success" onClick={pushNotify}>
                 Send Message
               </button>
               
@@ -89,8 +95,8 @@ export function UserDetails(props) {
   
   
   return (
-    <div class="bookList">
-      <div class='container'>
+    <div className="bookList">
+      <div className='container'>
         { displayDetail()}
       </div>
     </div>

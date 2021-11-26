@@ -1,15 +1,36 @@
 import React from "react";
 
+import axios from "../auth/axiosConfig";
+
 export function SelectColumnFilter({
-    column: { filterValue, setFilter, preFilteredRows, id },
+    column: { filterValue, setFilter, id },
   }) {
+    const [optionsList, setOptionsList] = React.useState();
+    let url ;
+    if (id=='author'){
+      url = '../server/api/authors'
+    }
+    else if (id=='category'){
+      url = '../server/api/books/categories'
+    }
+    
+    React.useEffect(() =>{
+    if (url)
+      axios
+      .get(url)
+      .then(res =>setOptionsList(id=='author' ? res.data : res.data.categories))
+    else
+      setOptionsList(['pending', 'accepted', 'rejected'])
+    
+    }, [])
+    
     const options = React.useMemo(() => {
       const options = new Set()
-      preFilteredRows.forEach(row => {
-        options.add(row.values[id])
-      })
+      if (optionsList && optionsList.length){
+        optionsList.map((option) => options.add(id=='author' ? option.name : option))
+      }
       return [...options.values()]
-    }, [id, preFilteredRows])
+    }, [optionsList])
   
     return (
       <select

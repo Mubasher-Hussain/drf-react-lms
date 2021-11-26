@@ -1,9 +1,12 @@
 // TableContainer.js
 import React, { useEffect, useState } from "react"
 import { useTable, usePagination, useSortBy, useAsyncDebounce, useGlobalFilter, useFilters } from "react-table"
-import {Table} from 'reactstrap'
+import {Table} from 'react-bootstrap'
 import Pagination from "@mui/material/Pagination"
-
+import "bootstrap/dist/css/bootstrap.min.css"
+import Skeleton from '@mui/material/Skeleton';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 function GlobalFilter({
   totalRecords,
@@ -12,9 +15,11 @@ function GlobalFilter({
 }) {
   const count = totalRecords
   const [search, setSearch] = useState(globalFilter)
+  const onFetchDataDebounced = useAsyncDebounce(setGlobalFilter, 200)
   function onChange (event)  {
     setSearch(event.target.value);
-    setGlobalFilter(event.target.value || undefined)
+    //setGlobalFilter(event.target.value || undefined)
+    onFetchDataDebounced(event.target.value || undefined)
   }
 
   return (
@@ -26,6 +31,7 @@ function GlobalFilter({
         style={{
           fontSize: '1.1rem',
           border: '0',
+          width: '100%',
         }}
       />
     </span>
@@ -108,7 +114,7 @@ const handleChange = (event, value) => {
   gotoPage(value-1);
 };
 
-const onFetchDataDebounced = useAsyncDebounce(fetchData, 200)
+const onFetchDataDebounced = useAsyncDebounce(fetchData, 400)
 
 useEffect(() => {
   onFetchDataDebounced({ pageIndex, pageSize, sortBy, globalFilter, filters })
@@ -117,9 +123,9 @@ useEffect(() => {
 
   return (
     <>
-    <Table bordered hover {...getTableProps()}>
-      <thead>
-      <tr>
+      <Table bordered hover {...getTableProps()}>
+        <thead>
+          <tr>
             <th
               colSpan={visibleColumns.length}
               style={{
@@ -137,20 +143,20 @@ useEffect(() => {
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th scope="col">
-              <div {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render("Header")}
-                  <span>
-                  {column.isSorted
-                  ? column.isSortedDesc
-                    ? ' 🔽'
-                    : ' 🔼'
-                  : ''}
-                  </span>
-              </div>
-              <div>
-                  {column.canFilter ? column.render("Filter") : null}
-              </div>
-          </th>
+                <div>
+                    {column.canFilter ? column.render("Filter") : null}
+                </div>
+                <div {...column.getHeaderProps(column.getSortByToggleProps())}>
+                    {column.render("Header")}
+                    <span>
+                    {column.isSorted
+                    ? column.isSortedDesc
+                      ? <ArrowDropDownIcon color="primary"/>
+                      : <ArrowDropUpIcon color="primary" />
+                    : ''}
+                    </span>
+                </div>
+              </th>
             ))}
           </tr>
         ))}
@@ -163,14 +169,22 @@ useEffect(() => {
           return (
             <tr {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                return <td {...cell.getCellProps()}>{loading ? (
+                  <Skeleton />
+                  
+                ) : cell.render("Cell")}</td>
               })}
             </tr>
           )
         })}
         <tr>
             {loading ? (
-              <td colSpan="10000">Loading...</td>
+              <td colSpan="10000">
+              <Skeleton animation="wave" />
+              <Skeleton />
+              <Skeleton />
+                  
+              </td>
             ) : (
               <td colSpan="10000">
                 Showing {page.length} of ~{totalPageCount}{' '}
